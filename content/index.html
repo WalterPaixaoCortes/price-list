@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Price List Update</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <!-- SheetJS (for Excel export) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    .autocomplete {
+      position: relative;
+    }
+
+    .autocomplete .dropdown-menu {
+      width: 100%;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .tag.is-clickable {
+      cursor: pointer;
+    }
+
+    @media (min-width: 769px) {
+      .search-box {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
+    }
+
+    .number-col {
+      width: 140px;
+    }
+
+    .table input[type="number"] {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Price List Update</h1>
+      <p class="subtitle">Use the filters to search. Then propose price changes and export the updated list.</p>
+
+      <!-- Notifications -->
+      <div id="notifyArea"></div>
+
+      <!-- Search Form -->
+      <div class="box search-box">
+        <form id="searchForm">
+          <div class="columns is-multiline">
+
+            <!-- partid (multi-value with lookup) -->
+            <div class="column is-12">
+              <label class="label" for="partidInput">Part ID</label>
+              <div class="field">
+                <div class="control autocomplete" id="partidControl">
+                  <div id="partidTags" class="tags mb-2"></div>
+
+                  <input id="partidInput" class="input" type="text"
+                    placeholder="Type to search parts… (press Enter to add)" aria-describedby="partidHelp"
+                    autocomplete="off" />
+
+                  <div id="partidDropdown" class="dropdown">
+                    <div class="dropdown-menu" role="menu">
+                      <div class="dropdown-content" id="partidOptions" aria-live="polite"></div>
+                    </div>
+                  </div>
+
+                  <input type="hidden" name="partid" id="partidHidden" />
+                </div>
+                <p id="partidHelp" class="help">
+                  Start typing to see suggestions. Use Enter or click a suggestion to add. Click a tag to remove.
+                </p>
+              </div>
+            </div>
+
+            <!-- catid (multi-select list) -->
+            <div class="column is-12">
+              <label class="label" for="catidSelect">Category</label>
+              <div class="field">
+                <div class="control">
+                  <div class="select is-multiple is-fullwidth">
+                    <select id="catidSelect" name="catid" multiple size="4" aria-describedby="catidHelp">
+                      <option disabled>Loading categories…</option>
+                    </select>
+                  </div>
+                </div>
+                <p id="catidHelp" class="help">Hold Ctrl/Cmd to select multiple categories.</p>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="column is-12">
+              <div class="buttons">
+                <button type="submit" class="button is-primary" id="searchBtn">
+                  <span>Search</span>
+                </button>
+                <button type="button" class="button is-light" id="resetBtn">Reset</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Results -->
+      <div class="box">
+        <div class="level">
+          <div class="level-left">
+            <h2 class="title is-5 mb-0">Results</h2>
+          </div>
+          <div class="level-right">
+            <span id="resultCount" class="tag is-info is-light">0 items</span>
+          </div>
+        </div>
+
+        <div id="activeFilters" class="content is-small" aria-live="polite"></div>
+
+        <div class="table-container">
+          <table class="table is-fullwidth is-striped is-hoverable" aria-describedby="resultCount">
+            <thead>
+              <tr>
+                <th>Part ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th class="number-col">Stock</th>
+                <th class="number-col">Price</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody">
+              <tr>
+                <td colspan="5" class="has-text-grey">Run a search to see results.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Price Proposal -->
+      <div class="box">
+        <h2 class="title is-5">Price Proposal</h2>
+        <p class="content is-small">Fill either <strong>New Price</strong> (sets the same price for all items in the
+          current results) or <strong>Increase %</strong> (applies a percentage increase to each item’s current price).
+          Also set an <strong>Effective Date</strong>.</p>
+
+        <form id="proposalForm">
+          <div class="columns is-multiline">
+            <div class="column is-12">
+              <div class="columns">
+                <div class="column">
+                  <label class="label" for="newPrice">New Price</label>
+                  <div class="control">
+                    <input id="newPrice" class="input" type="number" step="0.01" min="0" placeholder="e.g., 19.90">
+                  </div>
+                  <p class="help">Leave empty if using Increase %</p>
+                </div>
+                <div class="column">
+                  <label class="label" for="increasePct">Increase %</label>
+                  <div class="control">
+                    <input id="increasePct" class="input" type="number" step="0.01" placeholder="e.g., 7.5">
+                  </div>
+                  <p class="help">Leave empty if using New Price</p>
+                </div>
+                <div class="column">
+                  <label class="label" for="effectiveDate">Effective Date</label>
+                  <div class="control">
+                    <input id="effectiveDate" class="input" type="date">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="column is-12">
+              <div class="buttons">
+                <button type="submit" class="button is-link">Propose Change</button>
+                <button type="button" id="exportBtn" class="button is-success" disabled>Export to Excel</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- Proposed Prices Table -->
+        <div id="proposalArea" class="is-hidden">
+          <div class="level">
+            <div class="level-left">
+              <h3 class="title is-6 mb-0">Proposed Prices</h3>
+            </div>
+            <div class="level-right">
+              <span id="proposalMeta" class="tag is-warning is-light"></span>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="table is-fullwidth is-striped is-hoverable">
+              <thead>
+                <tr>
+                  <th>Part ID</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th class="number-col">Stock</th>
+                  <th class="number-col">Current Price</th>
+                  <th class="number-col">New Price (editable)</th>
+                  <th>Effective Date</th>
+                </tr>
+              </thead>
+              <tbody id="proposalBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    // ====================== Helpers / Config ======================
+    const money = (n) => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // Ajuste headers/autenticação aqui, se necessário:
+    const defaultFetchOpts = () => ({
+      // headers: { "Authorization": "Bearer <token>" }
+    });
+
+    function notify(type, message) {
+      // type: 'is-info' | 'is-success' | 'is-warning' | 'is-danger'
+      const area = document.getElementById('notifyArea');
+      const box = document.createElement('div');
+      box.className = `notification ${type}`;
+      box.innerHTML = `
+        <button class="delete" aria-label="Close"></button>
+        ${message}
+      `;
+      box.querySelector('.delete').addEventListener('click', () => box.remove());
+      area.appendChild(box);
+      // auto-dismiss after 6s
+      setTimeout(() => box.remove(), 6000);
+    }
+
+    async function safeFetch(url, opts = {}) {
+      const res = await fetch(url, { ...defaultFetchOpts(), ...opts });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Request failed: ${res.status} ${res.statusText} ${text ? " - " + text : ""}`);
+      }
+      return res.json();
+    }
+
+    // Simple debounce for the autocomplete
+    function debounce(fn, delay = 300) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    // ====================== DOM Elements ======================
+    const partidInput = document.getElementById("partidInput");
+    const partidTags = document.getElementById("partidTags");
+    const partidHidden = document.getElementById("partidHidden");
+    const dropdown = document.getElementById("partidDropdown");
+    const dropdownMenu = document.getElementById("partidOptions");
+
+    const searchForm = document.getElementById("searchForm");
+    const searchBtn = document.getElementById("searchBtn");
+    const catidSelect = document.getElementById("catidSelect");
+    const resultsBody = document.getElementById("resultsBody");
+    const resultCount = document.getElementById("resultCount");
+    const activeFilters = document.getElementById("activeFilters");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const proposalForm = document.getElementById("proposalForm");
+    const newPriceEl = document.getElementById("newPrice");
+    const increaseEl = document.getElementById("increasePct");
+    const effDateEl = document.getElementById("effectiveDate");
+    const proposalArea = document.getElementById("proposalArea");
+    const proposalBody = document.getElementById("proposalBody");
+    const proposalMeta = document.getElementById("proposalMeta");
+    const exportBtn = document.getElementById("exportBtn");
+
+    // ====================== State ======================
+    const selectedPartIds = new Set();
+    let lastSearchRows = [];
+    let proposedRows = [];
+
+    // ====================== partid Autocomplete ======================
+    function openDropdown() { dropdown.classList.add("is-active"); }
+    function closeDropdown() { dropdown.classList.remove("is-active"); }
+    function syncHidden() { partidHidden.value = Array.from(selectedPartIds).join(","); }
+
+    function renderTags() {
+      partidTags.innerHTML = "";
+      selectedPartIds.forEach(id => {
+        const tag = document.createElement("span");
+        tag.className = "tag is-link is-light is-medium is-clickable";
+        tag.textContent = id;
+        tag.title = "Click to remove";
+        tag.addEventListener("click", () => {
+          selectedPartIds.delete(id);
+          syncHidden(); renderTags();
+        });
+        partidTags.appendChild(tag);
+      });
+    }
+
+    async function fetchPartidOptions(query) {
+      const url = `/find_partid?q=${encodeURIComponent(query || "")}`;
+      // Expected response: [{ id, label }]
+      const list = await safeFetch(url);
+      return Array.isArray(list) ? list : [];
+    }
+
+    async function renderOptions(query) {
+      dropdownMenu.innerHTML = "";
+      const loading = document.createElement("div");
+      loading.className = "dropdown-item has-text-grey";
+      loading.textContent = "Loading…";
+      dropdownMenu.appendChild(loading);
+
+      try {
+        const matches = await fetchPartidOptions(query);
+        dropdownMenu.innerHTML = "";
+        if (!matches.length) {
+          const empty = document.createElement("div");
+          empty.className = "dropdown-item has-text-grey";
+          empty.textContent = "No matches";
+          dropdownMenu.appendChild(empty);
+          return;
+        }
+        matches.slice(0, 20).forEach(m => {
+          const a = document.createElement("a");
+          a.className = "dropdown-item";
+          a.setAttribute("role", "option");
+          a.textContent = m.label ?? m.id;
+          a.addEventListener("click", () => {
+            addPartId(m.id);
+            partidInput.value = "";
+            closeDropdown();
+          });
+          dropdownMenu.appendChild(a);
+        });
+      } catch (e) {
+        dropdownMenu.innerHTML = "";
+        const err = document.createElement("div");
+        err.className = "dropdown-item has-text-danger";
+        err.textContent = "Error loading suggestions.";
+        dropdownMenu.appendChild(err);
+        notify("is-danger", `Partid lookup failed. ${e.message}`);
+      }
+    }
+
+    const debouncedRenderOptions = debounce((q) => { renderOptions(q); openDropdown(); }, 250);
+
+    function addPartId(id) {
+      if (!id) return;
+      selectedPartIds.add(id);
+      syncHidden(); renderTags();
+    }
+
+    partidInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const raw = partidInput.value.trim();
+        if (!raw) return;
+        // Accept raw as ID; you can optionally validate via a quick lookup
+        addPartId(raw);
+        partidInput.value = "";
+        closeDropdown();
+      }
+    });
+
+    partidInput.addEventListener("input", () => {
+      const q = partidInput.value;
+      if (!q) { closeDropdown(); return; }
+      debouncedRenderOptions(q);
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!document.getElementById("partidControl").contains(e.target)) closeDropdown();
+    });
+
+    renderTags(); syncHidden();
+
+    // ====================== Categories ======================
+    async function loadCategories() {
+      try {
+        const data = await safeFetch(`/categories`);
+        // Expected: [{ id, name }]
+        catidSelect.innerHTML = "";
+        if (!Array.isArray(data) || !data.length) {
+          const opt = document.createElement("option");
+          opt.disabled = true; opt.textContent = "No categories found";
+          catidSelect.appendChild(opt);
+          return;
+        }
+        data.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.id ?? c; // fallback if endpoint returns simple array
+          opt.textContent = c.name ?? String(c.id ?? c);
+          catidSelect.appendChild(opt);
+        });
+      } catch (e) {
+        catidSelect.innerHTML = `<option disabled>Error loading categories</option>`;
+        notify("is-danger", `Failed to load categories. ${e.message}`);
+      }
+    }
+
+    // Load categories on start
+    loadCategories();
+
+    // ====================== Search (POST /items) ======================
+    function getSelectedCategories() {
+      return Array.from(catidSelect.selectedOptions).map(o => o.value);
+    }
+
+    function renderActiveFilters(partIds, cats) {
+      const partsText = partIds.length ? partIds.join(", ") : "—";
+      const catsText = cats.length ? cats.join(", ") : "—";
+      activeFilters.innerHTML = `
+        <p><strong>Active filters</strong></p>
+        <ul>
+          <li><strong>Part ID:</strong> ${partsText}</li>
+          <li><strong>Category:</strong> ${catsText}</li>
+        </ul>
+      `;
+    }
+
+    function renderResults(rows) {
+      resultsBody.innerHTML = "";
+      if (!rows.length) {
+        resultsBody.innerHTML = `<tr><td colspan="5" class="has-text-grey">No items matched your filters.</td></tr>`;
+      } else {
+        rows.forEach(r => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><code>${r.partid}</code></td>
+            <td>${r.name ?? ""}</td>
+            <td>${r.category ?? ""}</td>
+            <td>${r.stock ?? ""}</td>
+            <td>$ ${money(r.price ?? 0)}</td>
+          `;
+          resultsBody.appendChild(tr);
+        });
+      }
+      resultCount.textContent = `${rows.length} item${rows.length === 1 ? "" : "s"}`;
+    }
+
+    function clearProposal() {
+      proposalArea.classList.add("is-hidden");
+      proposalBody.innerHTML = "";
+      proposalMeta.textContent = "";
+      exportBtn.disabled = true;
+      proposedRows = [];
+    }
+
+    searchForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const partIds = Array.from(selectedPartIds);
+      const cats = getSelectedCategories();
+      //console.log("Searching with", { partIds, cats });
+
+      searchBtn.classList.add("is-loading");
+      try {
+        const params = new URLSearchParams();
+        partIds.forEach(p => params.append("partid", p)); // multiple partid: partid=1&partid=2
+        cats.forEach(c => params.append("catid", c));     // multiple
+
+        const rows = await safeFetch(`/items?${new URLSearchParams(params).toString()}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json", ...defaultFetchOpts().headers },
+          //body: JSON.stringify(payload)
+        });
+
+        console.log(`/items?${new URLSearchParams(params).toString()}`);
+        console.log(rows);
+
+        lastSearchRows = Array.isArray(rows) ? rows.map(r => ({ ...r })) : [];
+        renderActiveFilters(partIds, cats);
+        renderResults(lastSearchRows);
+        clearProposal();
+      } catch (e2) {
+        notify("is-danger", `Search failed. ${e2.message}`);
+      } finally {
+        searchBtn.classList.remove("is-loading");
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      selectedPartIds.clear(); renderTags(); syncHidden();
+      Array.from(catidSelect.options).forEach(o => (o.selected = false));
+      activeFilters.innerHTML = "";
+      resultsBody.innerHTML = `<tr><td colspan="5" class="has-text-grey">Run a search to see results.</td></tr>`;
+      resultCount.textContent = "0 items";
+      partidInput.value = ""; closeDropdown();
+      lastSearchRows = [];
+      clearProposal();
+    });
+
+    // ====================== Proposal / Export ======================
+    proposalForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!lastSearchRows.length) {
+        notify("is-warning", "Run a search first to get a result list.");
+        return;
+      }
+
+      const newPriceVal = newPriceEl.value ? parseFloat(newPriceEl.value) : null;
+      const increasePct = increaseEl.value ? parseFloat(increaseEl.value) : null;
+      const effDate = effDateEl.value || "";
+
+      if (newPriceVal == null && increasePct == null) {
+        notify("is-warning", "Fill either New Price or Increase %.");
+        return;
+      }
+      if (newPriceVal != null && newPriceVal < 0) {
+        notify("is-warning", "New Price must be zero or greater.");
+        return;
+      }
+
+      proposedRows = lastSearchRows.map(row => {
+        const current = Number(row.price ?? 0);
+        let next = current;
+        if (increasePct != null && !isNaN(increasePct)) {
+          next = current * (1 + (increasePct / 100));
+        } else if (newPriceVal != null && !isNaN(newPriceVal)) {
+          next = newPriceVal;
+        }
+        return {
+          ...row,
+          currentPrice: current,
+          newPrice: Number(next.toFixed(2)),
+          effectiveDate: effDate
+        };
+      });
+
+      renderProposalTable();
+      proposalMeta.textContent = effDate ? `Effective Date: ${effDate}` : "Effective Date: —";
+      proposalArea.classList.remove("is-hidden");
+      exportBtn.disabled = false;
+      notify("is-success", "Proposed prices generated. You can edit them inline.");
+    });
+
+    function renderProposalTable() {
+      proposalBody.innerHTML = "";
+      proposedRows.forEach((r, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><code>${r.partid}</code></td>
+          <td>${r.name ?? ""}</td>
+          <td>${r.category ?? ""}</td>
+          <td>${r.stock ?? ""}</td>
+          <td>$ ${money(r.currentPrice ?? 0)}</td>
+          <td>
+            <input type="number" class="input" step="0.01" min="0" value="${r.newPrice}">
+          </td>
+          <td>${r.effectiveDate || "—"}</td>
+        `;
+        const input = tr.querySelector("input[type='number']");
+        input.addEventListener("input", (e) => {
+          const val = parseFloat(e.target.value);
+          proposedRows[idx].newPrice = isNaN(val) ? 0 : val;
+        });
+        proposalBody.appendChild(tr);
+      });
+    }
+
+    exportBtn.addEventListener("click", () => {
+      if (!proposedRows.length) return;
+
+      const data = proposedRows.map(r => ({
+        "Part ID": r.partid,
+        "Name": r.name ?? "",
+        "Category": r.category ?? "",
+        "Stock": r.stock ?? "",
+        "Current Price": Number((r.currentPrice ?? 0).toFixed(2)),
+        "New Price": Number(Number(r.newPrice ?? 0).toFixed(2)),
+        "Effective Date": r.effectiveDate || ""
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Proposed Prices");
+      // mark numeric columns for Excel
+      const range = XLSX.utils.decode_range(worksheet['!ref']);
+      for (let C = 0; C <= range.e.c; C++) {
+        const headerCell = XLSX.utils.encode_cell({ r: 0, c: C });
+        const header = worksheet[headerCell]?.v;
+        if (header === "Current Price" || header === "New Price" || header === "Stock") {
+          for (let R = 1; R <= range.e.r; R++) {
+            const addr = XLSX.utils.encode_cell({ r: R, c: C });
+            if (worksheet[addr]) worksheet[addr].t = 'n';
+          }
+        }
+      }
+      XLSX.writeFile(workbook, "proposed_prices.xlsx");
+    });
+  </script>
+</body>
+
+</html>
