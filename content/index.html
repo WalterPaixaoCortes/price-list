@@ -64,7 +64,7 @@
                   <div id="partidTags" class="tags mb-2"></div>
 
                   <input id="partidInput" class="input" type="text"
-                    placeholder="Type to search parts… (press Enter to add)" aria-describedby="partidHelp"
+                    placeholder="Type to search part or type ALL for all parts... (press Enter to add)" aria-describedby="partidHelp"
                     autocomplete="off" />
 
                   <div id="partidDropdown" class="dropdown">
@@ -129,7 +129,7 @@
                 <th>Part ID</th>
                 <th>Name</th>
                 <th>Category</th>
-                <th class="number-col">Stock</th>
+                <th class="number-col">Description</th>
                 <th class="number-col">Price</th>
               </tr>
             </thead>
@@ -203,7 +203,7 @@
                   <th>Part ID</th>
                   <th>Name</th>
                   <th>Category</th>
-                  <th class="number-col">Stock</th>
+                  <th class="number-col">Description</th>
                   <th class="number-col">Current Price</th>
                   <th class="number-col">New Price (editable)</th>
                   <th>Effective Date</th>
@@ -336,7 +336,7 @@
           const a = document.createElement("a");
           a.className = "dropdown-item";
           a.setAttribute("role", "option");
-          a.textContent = m.label ?? m.id;
+          a.textContent = m.id ?? m.id;
           a.addEventListener("click", () => {
             addPartId(m.id);
             partidInput.value = "";
@@ -401,7 +401,7 @@
         data.forEach(c => {
           const opt = document.createElement("option");
           opt.value = c.id ?? c; // fallback if endpoint returns simple array
-          opt.textContent = c.name ?? String(c.id ?? c);
+          opt.textContent = c.id ?? String(c.id ?? c);
           catidSelect.appendChild(opt);
         });
       } catch (e) {
@@ -440,8 +440,8 @@
           tr.innerHTML = `
             <td><code>${r.partid}</code></td>
             <td>${r.name ?? ""}</td>
-            <td>${r.category ?? ""}</td>
-            <td>${r.stock ?? ""}</td>
+            <td>${r.catid ?? ""}</td>
+            <td>${r.description ?? ""}</td>
             <td>$ ${money(r.price ?? 0)}</td>
           `;
           resultsBody.appendChild(tr);
@@ -467,7 +467,7 @@
       searchBtn.classList.add("is-loading");
       try {
         const params = new URLSearchParams();
-        partIds.forEach(p => params.append("partid", p)); // multiple partid: partid=1&partid=2
+        partIds.forEach(p => params.append("partid", p.trim())); // multiple partid: partid=1&partid=2
         cats.forEach(c => params.append("catid", c));     // multiple
 
         const rows = await safeFetch(`/items?${new URLSearchParams(params).toString()}`, {
@@ -552,8 +552,8 @@
         tr.innerHTML = `
           <td><code>${r.partid}</code></td>
           <td>${r.name ?? ""}</td>
-          <td>${r.category ?? ""}</td>
-          <td>${r.stock ?? ""}</td>
+          <td>${r.catid ?? ""}</td>
+          <td>${r.description ?? ""}</td>
           <td>$ ${money(r.currentPrice ?? 0)}</td>
           <td>
             <input type="number" class="input" step="0.01" min="0" value="${r.newPrice}">
@@ -575,8 +575,8 @@
       const data = proposedRows.map(r => ({
         "Part ID": r.partid,
         "Name": r.name ?? "",
-        "Category": r.category ?? "",
-        "Stock": r.stock ?? "",
+        "Category": r.catid ?? "",
+        "Description": r.description ?? "",
         "Current Price": Number((r.currentPrice ?? 0).toFixed(2)),
         "New Price": Number(Number(r.newPrice ?? 0).toFixed(2)),
         "Effective Date": r.effectiveDate || ""

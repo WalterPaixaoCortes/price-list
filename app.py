@@ -25,33 +25,33 @@ from sqlalchemy import (
 from sqlalchemy.engine import Connection
 
 # ================== Config ==================
-DB_PATH = os.getenv("SQLITE_PATH", "app.db")
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+#DB_PATH = os.getenv("SQLITE_PATH", "app.db")
+SQLSERVER_URL = "mssql+pyodbc://scheduler:Rdl2023!@rdl-srvrsql01/esidb?driver=ODBC+Driver+17+for+SQL+Server"
+#DATABASE_URL = f"sqlite:///{DB_PATH}"
 
-engine = create_engine(DATABASE_URL, future=True)
+engine = create_engine(SQLSERVER_URL, future=True)
 metadata = MetaData()
 
 CONTENT_FOLDER = os.path.join(os.path.dirname(__file__), "content")
 
 # ================== Tabelas ==================
 Parts = Table(
-    "parts",
+    "pricelist_parts",
     metadata,
     Column("id", String(50), primary_key=True),  # partid
     Column("label", String(200), nullable=False),
-    Column("label_norm", String(200), nullable=False),  # para busca sem acentos/case
 )
-Index("ix_parts_label_norm", Parts.c.label_norm)
+Index("ix_parts_id", Parts.c.id)
 
 Categories = Table(
-    "categories",
+    "pricelist_categories",
     metadata,
     Column("id", String(50), primary_key=True),  # catid
     Column("name", String(200), nullable=False),
 )
 
 Prices = Table(
-    "prices",
+    "pricelist_prices",
     metadata,
     Column("partid", String(50), nullable=False),
     Column("catid", String(50), nullable=False),
@@ -201,7 +201,7 @@ def seed_if_empty():
 
 
 # roda o seed no import/boot
-seed_if_empty()
+# seed_if_empty()
 
 app.mount(
     "/static",
@@ -276,7 +276,8 @@ def list_items(
             status_code=400, detail="Envie ao menos um filtro: partid e/ou catid."
         )
     conditions = []
-    if partid:
+    #print(partid)
+    if partid and partid[0] != 'ALL':
         conditions.append(Prices.c.partid.in_(partid))
     if catid:
         conditions.append(Prices.c.catid.in_(catid))
@@ -293,7 +294,22 @@ def list_items(
         )
         .where(and_(*conditions))
         .order_by(Prices.c.partid, Prices.c.catid, Prices.c.sku)
-        .limit(limit)
     )
+    
+    sql = stmt.compile(engine, compile_kwargs={"literal_binds": True})
+    print(str(sql))
+
     rows = conn.execute(stmt).mappings().all()
-    return [PriceItem(**row) for row in rows]
+    records = []
+    for row in rows:
+       el = {
+	  'partid': row['partid'],
+          'catid': row['catid'],
+	  'sku': str(row['sku']),
+          'description': row['description'],
+          'price': row['price'],
+          'currency': row['currency'],
+          'effective_date': row['effective_date'],
+       }
+       records.append(el)
+    return records
