@@ -1,0 +1,630 @@
+[
+  {
+    "filename": "APAC-LAC/RDL_Price_Export Dealer 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Dealer\n(1-5 Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Premier\n(6-24 Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Silver\n(25-99 Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Gold\n(100-249 Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Platinum\n(250+ Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " ",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .1",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .2",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .3",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .4",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .5",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .6",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .7",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .8",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "APAC-LAC/RDL_Price_Export Distributor 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Dealer",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Distributor",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Distributor Less 10%",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " ",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .1",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .2",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .3",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .4",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .5",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .6",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .7",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "APAC-LAC/RDL_Price_Export Institutional 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Pronet",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Institutional",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " ",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .1",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .2",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .3",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "APAC-LAC/RDL_Price_Export Retail 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Export Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "RDL-E & E-EMEA/RDL-E PRICE MASTER 01-01-2026.xlsx",
+    "starting_row": 4,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "EXP Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "EXP Dealer",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Cost",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Dealer",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Dealer           -20%",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Distributor",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " ",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Unnamed: 12",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .1",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .2",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .3",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .4",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .5",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": " .6",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "RDL-E & E-EMEA/RDLE_Price_Dealer -20  01-01-2026.xlsx",
+    "starting_row": 4,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Dealer",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Dealer           -20%",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "RDL-E & E-EMEA/RDLE_Price_Dealer 01-01-2026.xlsx",
+    "starting_row": 4,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Dealer",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "RDL-E & E-EMEA/RDLE_Price_Distributor 01-01-2026.xlsx",
+    "starting_row": 4,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Dealer",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Distributor",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "RDL-E & E-EMEA/RDLE_Price_Retail 01-01-2026.xlsx",
+    "starting_row": 4,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Euro Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "US-CA & WESCO India/RDL_Price_Dealer 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "US MAP",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Dealer\n(1-5 Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Premier\n(6-24 Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Silver\n(25-99 Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Gold\n(100-249 Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Platinum\n(250+ Units)",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "US-CA & WESCO India/RDL_Price_Distributor 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "US MAP",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Dealer",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Distributor",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Distributor Less 8%",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "US-CA & WESCO India/RDL_Price_Institutional 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Pronet",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Institutional",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "US-CA & WESCO India/RDL_Price_Retail 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  },
+  {
+    "filename": "US-CA & WESCO India/RDL_Price_Wesco-Anixter India 01-01-2026.xlsx",
+    "starting_row": 3,
+    "columns": [
+      {
+        "columnname": "Part ID",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Part #",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Description",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Retail",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "US MAP",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Dealer",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Distributor",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Distributor Less 8%",
+        "dfcolumnname": ""
+      },
+      {
+        "columnname": "Last Change",
+        "dfcolumnname": ""
+      }
+    ]
+  }
+]

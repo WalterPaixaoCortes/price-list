@@ -5,3 +5,4 @@ sqlalchemy
 pyodbc
 pandas
 openpyxl
+typer
