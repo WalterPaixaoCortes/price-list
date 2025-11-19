@@ -3,3 +3,5 @@ pydantic
 uvicorn
 sqlalchemy
 pyodbc
+pandas
+openpyxl

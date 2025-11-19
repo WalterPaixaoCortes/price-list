@@ -64,8 +64,8 @@
                   <div id="partidTags" class="tags mb-2"></div>
 
                   <input id="partidInput" class="input" type="text"
-                    placeholder="Type to search part or type ALL for all parts... (press Enter to add)" aria-describedby="partidHelp"
-                    autocomplete="off" />
+                    placeholder="Type to search part or type ALL for all parts... (press Enter to add)"
+                    aria-describedby="partidHelp" autocomplete="off" />
 
                   <div id="partidDropdown" class="dropdown">
                     <div class="dropdown-menu" role="menu">
@@ -365,14 +365,21 @@
     partidInput.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
+
         const raw = partidInput.value.trim();
         if (!raw) return;
-        // Accept raw as ID; you can optionally validate via a quick lookup
-        addPartId(raw);
+
+        // Divide por vírgula e adiciona cada ID
+        raw.split(",").forEach(p => {
+          const cleaned = p.trim();
+          if (cleaned) addPartId(cleaned);
+        });
+
         partidInput.value = "";
         closeDropdown();
       }
     });
+
 
     partidInput.addEventListener("input", () => {
       const q = partidInput.value;
