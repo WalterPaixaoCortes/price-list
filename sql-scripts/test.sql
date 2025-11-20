@@ -1,1 +1,24 @@
-select * from prices
+select partid, description, effective_date,
+MAX([DLR-1]) as [DLR-1],
+MAX([DLR-6]) as [DLR-6],
+MAX([DLR-25]) as [DLR-25],
+MAX([DLR-100]) as [DLR-100],
+MAX([DLR-250]) as [DLR-250],
+MAX([DST-1]) as [DST-1],
+MAX([EUR-1]) as [EUR-1],
+MAX([EXP-1]) as [EXP-1],
+MAX([GLD-1]) as [GLD-1],
+MAX([GLD-250]) as [GLD-250],
+MAX([MAP-1]) as [MAP-1],
+MAX([PLT-1]) as [PLT-1],
+MAX([PMR-1]) as [PMR-1],
+MAX([PMR-25]) as [PMR-25],
+MAX([PMR-100]) as [PMR-100],
+MAX([PMR-250]) as [PMR-250],
+MAX([RTL-1]) as [RTL-1],
+MAX([SIL-1]) as [SIL-1],
+MAX([SIL-100]) as [SIL-100],
+MAX([SIL-250]) as [SIL-250]
+from prices
+group by partid, description, effective_date
+order by partid;

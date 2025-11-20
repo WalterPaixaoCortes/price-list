@@ -29,18 +29,15 @@
       },
       {
         "columnname": "Export Silver\n(25-99 Units)",
-        "dfcolumnname": "SIL-1",
-        "correct": false
+        "dfcolumnname": "SIL-1"
       },
       {
         "columnname": "Export Gold\n(100-249 Units)",
-        "dfcolumnname": "GLD-1",
-        "correct": false
+        "dfcolumnname": "GLD-1"
       },
       {
         "columnname": "Export Platinum\n(250+ Units)",
-        "dfcolumnname": "PLT-1",
-        "correct": false
+        "dfcolumnname": "PLT-1"
       },
       {
         "columnname": "Last Change",
@@ -78,7 +75,7 @@
       },
       {
         "columnname": "Export Distributor Less 10%",
-        "dfcolumnname": "DST-1/0.9"
+        "dfcolumnname": "DST-1*0.9"
       },
       {
         "columnname": "Last Change",
@@ -108,13 +105,11 @@
       },
       {
         "columnname": "Pronet",
-        "dfcolumnname": "PMR-1",
-        "correct": false
+        "dfcolumnname": "MAP-1"
       },
       {
         "columnname": "Export Institutional",
-        "dfcolumnname": "EXP-1",
-        "correct": false
+        "dfcolumnname": null
       },
       {
         "columnname": "Last Change",
@@ -178,23 +173,19 @@
       },
       {
         "columnname": "Euro Retail",
-        "dfcolumnname": "EUR-1",
-        "correct": false
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "Euro Dealer",
-        "dfcolumnname": "EUR-1",
-        "correct": false
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Euro Dealer           -20%",
-        "dfcolumnname": "EUR-1/0.8",
-        "correct": false
+        "dfcolumnname": "DLR-1*0.8"
       },
       {
         "columnname": "Euro Distributor",
-        "dfcolumnname": "EUR-1",
-        "correct": false
+        "dfcolumnname": "DST-1"
       },
       {
         "columnname": "Last Change",
@@ -224,13 +215,11 @@
       },
       {
         "columnname": "Euro Dealer",
-        "dfcolumnname": "EUR-1",
-        "correct": false
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Euro Dealer           -20%",
-        "dfcolumnname": "EUR-1/0.8",
-        "correct": false
+        "dfcolumnname": "DLR-1*0.8"
       },
       {
         "columnname": "Last Change",
@@ -260,8 +249,7 @@
       },
       {
         "columnname": "Euro Dealer",
-        "dfcolumnname": "EUR-1",
-        "correct": false
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Last Change",
@@ -291,13 +279,11 @@
       },
       {
         "columnname": "Euro Dealer",
-        "dfcolumnname": "EUR-1",
-        "correct": false
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Euro Distributor",
-        "dfcolumnname": "EUR-1",
-        "correct": false
+        "dfcolumnname": "DST-1"
       },
       {
         "columnname": "Last Change",
@@ -323,7 +309,7 @@
       },
       {
         "columnname": "Euro Retail",
-        "dfcolumnname": "EUR-1"
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "Last Change",
@@ -361,23 +347,19 @@
       },
       {
         "columnname": "Premier\n(6-24 Units)",
-        "dfcolumnname": "PRM-1",
-        "correct": false
+        "dfcolumnname": "PMR-1"
       },
       {
         "columnname": "Silver\n(25-99 Units)",
-        "dfcolumnname": "SIL-1",
-        "correct": false
+        "dfcolumnname": "SIL-1"
       },
       {
         "columnname": "Gold\n(100-249 Units)",
-        "dfcolumnname": "GLD-1",
-        "correct": false
+        "dfcolumnname": "GLD-1"
       },
       {
         "columnname": "Platinum\n(250+ Units)",
-        "dfcolumnname": "PLT-1",
-        "correct": false
+        "dfcolumnname": "PLT-1"
       },
       {
         "columnname": "Last Change",
@@ -419,7 +401,7 @@
       },
       {
         "columnname": "Distributor Less 8%",
-        "dfcolumnname": "DST-1/0.2"
+        "dfcolumnname": "DST-1*0.92"
       },
       {
         "columnname": "Last Change",
@@ -449,13 +431,11 @@
       },
       {
         "columnname": "Pronet",
-        "dfcolumnname": "PMR-1",
-        "correct": false
+        "dfcolumnname": "MAP-1"
       },
       {
         "columnname": "Institutional",
-        "dfcolumnname": "RTL-1",
-        "correct": false
+        "dfcolumnname": null
       },
       {
         "columnname": "Last Change",
@@ -523,7 +503,7 @@
       },
       {
         "columnname": "Distributor Less 8%",
-        "dfcolumnname": "DST-1/0.2"
+        "dfcolumnname": "DST-1*0.92"
       },
       {
         "columnname": "Last Change",

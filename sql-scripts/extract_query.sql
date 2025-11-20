@@ -14,7 +14,7 @@ FROM (
 PIVOT (
     MAX(price) FOR category IN ([DLR-1],[DLR-6],[DLR-25],[DLR-100],[DLR-250],[DST-1],[EUR-1],[EXP-1],[GLD-1],[GLD-250],[MAP-1],[PLT-1],[PMR-1],[PMR-25],[PMR-100],[PMR-250],[RTL-1],[SIL-1],[SIL-100],[SIL-250])
 ) AS p)
-select partid, sku, description, effective_date,
+select partid, description, effective_date,
 MAX([DLR-1]) as [DLR-1],
 MAX([DLR-6]) as [DLR-6],
 MAX([DLR-25]) as [DLR-25],
@@ -36,5 +36,5 @@ MAX([SIL-1]) as [SIL-1],
 MAX([SIL-100]) as [SIL-100],
 MAX([SIL-250]) as [SIL-250]
 from raw_data
-group by partid, sku, description, effective_date
-order by partid, sku;
+group by partid, description, effective_date
+order by partid;

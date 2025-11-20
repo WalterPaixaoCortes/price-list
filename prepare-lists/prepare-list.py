@@ -234,17 +234,58 @@ def main(
             for col in schema_columns:
                 cname = col.get("columnname")
                 dfield = col.get("dfcolumnname", "")
-                if not dfield:
-                    continue
 
-                # map common direct names
-                val = None
-                dfield_l = dfield.strip()
-                if dfield_l in ("partid", "sku", "description", "effective_date"):
-                    val = prow.get(dfield_l)
+                # default empty cell if dfcolumnname is missing/null
+                if not dfield:
+                    val = None
                 else:
-                    # expression or pivoted category like [RTL-1]
-                    val = eval_expr(dfield_l, prow)
+                    dfield_l = dfield.strip()
+
+                    def get_value(expr: str, row: pd.Series):
+                        """Return a value for a simple expr which may be a column name or a [bracketed] category."""
+                        if not expr:
+                            return None
+                        # direct lookup (case-insensitive)
+                        if expr in row.index:
+                            return row.get(expr)
+                        if expr.lower() in row.index:
+                            return row.get(expr.lower())
+                        # bracketed category
+                        m = expr_re.search(expr)
+                        if m:
+                            cat = m.group(1)
+                            if cat in row.index:
+                                return row.get(cat)
+                            if cat.lower() in row.index:
+                                return row.get(cat.lower())
+                            if cat.upper() in row.index:
+                                return row.get(cat.upper())
+                        # literal number?
+                        try:
+                            return float(expr)
+                        except Exception:
+                            return None
+
+                    # if contains '/', treat as a simple formula left/right
+                    if "*" in dfield_l:
+                        left, right = dfield_l.split("*", 1)
+                        lval = get_value(left.strip(), prow)
+                        rval = None
+                        try:
+                            rval = float(right.strip())
+                        except Exception:
+                            rval = get_value(right.strip(), prow)
+
+                        try:
+                            if lval is None or rval in (None, 0):
+                                val = None
+                            else:
+                                val = float(lval) * float(rval)
+                        except Exception:
+                            val = None
+                    else:
+                        # simple lookup or bracket expression
+                        val = get_value(dfield_l, prow)
 
                 col_idx = col_map.get(cname)
                 if col_idx is None:
