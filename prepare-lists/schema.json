@@ -5,79 +5,46 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Export Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "Export Dealer\n(1-5 Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Export Premier\n(6-24 Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "PMR-1"
       },
       {
         "columnname": "Export Silver\n(25-99 Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "SIL-1",
+        "correct": false
       },
       {
         "columnname": "Export Gold\n(100-249 Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "GLD-1",
+        "correct": false
       },
       {
         "columnname": "Export Platinum\n(250+ Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "PLT-1",
+        "correct": false
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " ",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .1",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .2",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .3",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .4",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .5",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .6",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .7",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .8",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -87,67 +54,35 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Export Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "Export Dealer",
-        "dfcolumnname": ""
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Export Distributor",
-        "dfcolumnname": ""
+        "dfcolumnname": "DST-1"
       },
       {
         "columnname": "Export Distributor Less 10%",
-        "dfcolumnname": ""
+        "dfcolumnname": "DST-1/0.9"
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " ",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .1",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .2",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .3",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .4",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .5",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .6",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .7",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -157,47 +92,33 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "Pronet",
-        "dfcolumnname": ""
+        "dfcolumnname": "PMR-1",
+        "correct": false
       },
       {
         "columnname": "Export Institutional",
-        "dfcolumnname": ""
+        "dfcolumnname": "EXP-1",
+        "correct": false
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " ",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .1",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .2",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .3",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -207,23 +128,23 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Export Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -233,79 +154,51 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "EXP Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "EXP Dealer",
-        "dfcolumnname": ""
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Euro Cost",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1"
       },
       {
         "columnname": "Euro Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1",
+        "correct": false
       },
       {
         "columnname": "Euro Dealer",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1",
+        "correct": false
       },
       {
         "columnname": "Euro Dealer           -20%",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1/0.8",
+        "correct": false
       },
       {
         "columnname": "Euro Distributor",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1",
+        "correct": false
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " ",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": "Unnamed: 12",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .1",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .2",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .3",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .4",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .5",
-        "dfcolumnname": ""
-      },
-      {
-        "columnname": " .6",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -315,31 +208,33 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description "
       },
       {
         "columnname": "Euro Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1"
       },
       {
         "columnname": "Euro Dealer",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1",
+        "correct": false
       },
       {
         "columnname": "Euro Dealer           -20%",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1/0.8",
+        "correct": false
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -349,27 +244,28 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Euro Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1"
       },
       {
         "columnname": "Euro Dealer",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1",
+        "correct": false
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -379,31 +275,33 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Euro Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1"
       },
       {
         "columnname": "Euro Dealer",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1",
+        "correct": false
       },
       {
         "columnname": "Euro Distributor",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1",
+        "correct": false
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -413,23 +311,23 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Euro Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "EUR-1"
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -439,47 +337,51 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "US MAP",
-        "dfcolumnname": ""
+        "dfcolumnname": "MAP-1"
       },
       {
         "columnname": "Dealer\n(1-5 Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Premier\n(6-24 Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "PRM-1",
+        "correct": false
       },
       {
         "columnname": "Silver\n(25-99 Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "SIL-1",
+        "correct": false
       },
       {
         "columnname": "Gold\n(100-249 Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "GLD-1",
+        "correct": false
       },
       {
         "columnname": "Platinum\n(250+ Units)",
-        "dfcolumnname": ""
+        "dfcolumnname": "PLT-1",
+        "correct": false
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -489,39 +391,39 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "US MAP",
-        "dfcolumnname": ""
+        "dfcolumnname": "MAP-1"
       },
       {
         "columnname": "Dealer",
-        "dfcolumnname": ""
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Distributor",
-        "dfcolumnname": ""
+        "dfcolumnname": "DST-1"
       },
       {
         "columnname": "Distributor Less 8%",
-        "dfcolumnname": ""
+        "dfcolumnname": "DST-1/0.2"
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -531,31 +433,33 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "Pronet",
-        "dfcolumnname": ""
+        "dfcolumnname": "PMR-1",
+        "correct": false
       },
       {
         "columnname": "Institutional",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1",
+        "correct": false
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -565,23 +469,23 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   },
@@ -591,39 +495,39 @@
     "columns": [
       {
         "columnname": "Part ID",
-        "dfcolumnname": ""
+        "dfcolumnname": "partid"
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": ""
+        "dfcolumnname": "sku"
       },
       {
         "columnname": "Description",
-        "dfcolumnname": ""
+        "dfcolumnname": "description"
       },
       {
         "columnname": "Retail",
-        "dfcolumnname": ""
+        "dfcolumnname": "RTL-1"
       },
       {
         "columnname": "US MAP",
-        "dfcolumnname": ""
+        "dfcolumnname": "MAP-1"
       },
       {
         "columnname": "Dealer",
-        "dfcolumnname": ""
+        "dfcolumnname": "DLR-1"
       },
       {
         "columnname": "Distributor",
-        "dfcolumnname": ""
+        "dfcolumnname": "DST-1"
       },
       {
         "columnname": "Distributor Less 8%",
-        "dfcolumnname": ""
+        "dfcolumnname": "DST-1/0.2"
       },
       {
         "columnname": "Last Change",
-        "dfcolumnname": ""
+        "dfcolumnname": "effective_date"
       }
     ]
   }
