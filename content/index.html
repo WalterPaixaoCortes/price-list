@@ -131,11 +131,12 @@
                 <th>Category</th>
                 <th class="number-col">Description</th>
                 <th class="number-col">Price</th>
+                <th class="number-col">Quantity</th>
               </tr>
             </thead>
             <tbody id="resultsBody">
               <tr>
-                <td colspan="5" class="has-text-grey">Run a search to see results.</td>
+                <td colspan="6" class="has-text-grey">Run a search to see results.</td>
               </tr>
             </tbody>
           </table>
@@ -204,6 +205,7 @@
                   <th>Name</th>
                   <th>Category</th>
                   <th class="number-col">Description</th>
+                  <th class="number-col">Quantity</th>
                   <th class="number-col">Current Price</th>
                   <th class="number-col">New Price (editable)</th>
                   <th>Effective Date</th>
@@ -450,6 +452,7 @@
             <td>${r.catid ?? ""}</td>
             <td>${r.description ?? ""}</td>
             <td>$ ${money(r.price ?? 0)}</td>
+            <td>${r.qty ?? 0}</td>
           `;
           resultsBody.appendChild(tr);
         });
@@ -566,6 +569,7 @@
             <input type="number" class="input" step="0.01" min="0" value="${r.newPrice}">
           </td>
           <td>${r.effectiveDate || "—"}</td>
+          <td>${r.qty ?? 0}</td>
         `;
         const input = tr.querySelector("input[type='number']");
         input.addEventListener("input", (e) => {
@@ -584,7 +588,7 @@
         "Name": r.name ?? "",
         "Category": r.catid ?? "",
         "Description": r.description ?? "",
-        "Current Price": Number((r.currentPrice ?? 0).toFixed(2)),
+        "Qty": Number(r.qty ?? 0),
         "New Price": Number(Number(r.newPrice ?? 0).toFixed(2)),
         "Effective Date": r.effectiveDate || ""
       }));

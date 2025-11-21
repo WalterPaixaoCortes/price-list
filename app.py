@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import (
+    Integer,
     create_engine,
     MetaData,
     Table,
@@ -25,9 +26,9 @@ from sqlalchemy import (
 from sqlalchemy.engine import Connection
 
 # ================== Config ==================
-#DB_PATH = os.getenv("SQLITE_PATH", "app.db")
+# DB_PATH = os.getenv("SQLITE_PATH", "app.db")
 SQLSERVER_URL = "mssql+pyodbc://scheduler:Rdl2023!@rdl-srvrsql01/esidb?driver=ODBC+Driver+17+for+SQL+Server"
-#DATABASE_URL = f"sqlite:///{DB_PATH}"
+# DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(SQLSERVER_URL, future=True)
 metadata = MetaData()
@@ -60,6 +61,7 @@ Prices = Table(
     Column("price", Float, nullable=False),
     Column("currency", String(10), nullable=False, default="USD"),
     Column("effective_date", DateTime, nullable=False),
+    Column("qty", Integer, nullable=False),
 )
 
 # ================== App ==================
@@ -276,8 +278,8 @@ def list_items(
             status_code=400, detail="Envie ao menos um filtro: partid e/ou catid."
         )
     conditions = []
-    #print(partid)
-    if partid and partid[0] != 'ALL':
+    # print(partid)
+    if partid and partid[0] != "ALL":
         conditions.append(Prices.c.partid.in_(partid))
     if catid:
         conditions.append(Prices.c.catid.in_(catid))
@@ -291,25 +293,27 @@ def list_items(
             Prices.c.price,
             Prices.c.currency,
             Prices.c.effective_date,
+            Prices.c.qty,
         )
         .where(and_(*conditions))
         .order_by(Prices.c.partid, Prices.c.catid, Prices.c.sku)
     )
-    
+
     sql = stmt.compile(engine, compile_kwargs={"literal_binds": True})
     print(str(sql))
 
     rows = conn.execute(stmt).mappings().all()
     records = []
     for row in rows:
-       el = {
-	  'partid': row['partid'],
-          'catid': row['catid'],
-	  'sku': str(row['sku']),
-          'description': row['description'],
-          'price': row['price'],
-          'currency': row['currency'],
-          'effective_date': row['effective_date'],
-       }
-       records.append(el)
+        el = {
+            "partid": row["partid"],
+            "catid": row["catid"],
+            "sku": str(row["sku"]),
+            "description": row["description"],
+            "price": row["price"],
+            "currency": row["currency"],
+            "effective_date": row["effective_date"],
+            "qty": row["qty"],
+        }
+        records.append(el)
     return records
