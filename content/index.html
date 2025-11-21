@@ -442,7 +442,7 @@
     function renderResults(rows) {
       resultsBody.innerHTML = "";
       if (!rows.length) {
-        resultsBody.innerHTML = `<tr><td colspan="5" class="has-text-grey">No items matched your filters.</td></tr>`;
+        resultsBody.innerHTML = `<tr><td colspan="6" class="has-text-grey">No items matched your filters.</td></tr>`;
       } else {
         rows.forEach(r => {
           const tr = document.createElement("tr");
@@ -555,6 +555,22 @@
       notify("is-success", "Proposed prices generated. You can edit them inline.");
     });
 
+
+    function endDate(date)
+    {
+	const year = parseInt(date.substring(0, 4), 10);
+
+	// última data do ano
+	const endOfYear = new Date(year + 1, 0, 0);
+
+	// formata de volta como yyyy-mm-dd
+	const result =
+  		endOfYear.getFullYear() + "-" +
+  		String(endOfYear.getMonth() + 1).padStart(2, "0") + "-" +
+  		String(endOfYear.getDate()).padStart(2, "0");
+	return result;
+    }
+
     function renderProposalTable() {
       proposalBody.innerHTML = "";
       proposedRows.forEach((r, idx) => {
@@ -564,12 +580,12 @@
           <td>${r.name ?? ""}</td>
           <td>${r.catid ?? ""}</td>
           <td>${r.description ?? ""}</td>
+          <td>${r.qty ?? 0}</td>
           <td>$ ${money(r.currentPrice ?? 0)}</td>
           <td>
             <input type="number" class="input" step="0.01" min="0" value="${r.newPrice}">
           </td>
           <td>${r.effectiveDate || "—"}</td>
-          <td>${r.qty ?? 0}</td>
         `;
         const input = tr.querySelector("input[type='number']");
         input.addEventListener("input", (e) => {
@@ -585,12 +601,12 @@
 
       const data = proposedRows.map(r => ({
         "Part ID": r.partid,
-        "Name": r.name ?? "",
-        "Category": r.catid ?? "",
-        "Description": r.description ?? "",
-        "Qty": Number(r.qty ?? 0),
-        "New Price": Number(Number(r.newPrice ?? 0).toFixed(2)),
-        "Effective Date": r.effectiveDate || ""
+        "Price Code": r.catid ?? "",
+        "Effective Date": r.effectiveDate || "",
+        "Order Qty": Number(r.qty ?? 0),
+        "End Date": endDate(r.effectiveDate) ?? "",
+        "Unit Price": Number(Number(r.newPrice ?? 0).toFixed(2)),
+	"Processed Flag": "N"
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(data);

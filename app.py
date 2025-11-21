@@ -94,6 +94,7 @@ class PriceItem(BaseModel):
     price: float
     currency: str
     effective_date: datetime
+    qty: int
 
 
 # ================== Helpers ==================
