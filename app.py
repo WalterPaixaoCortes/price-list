@@ -4,9 +4,9 @@ import unicodedata
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from fastapi import FastAPI, Query, HTTPException, Depends
+from fastapi import FastAPI, Query, HTTPException, Depends, Cookie, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import (
@@ -24,16 +24,47 @@ from sqlalchemy import (
     Index,
 )
 from sqlalchemy.engine import Connection
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 # ================== Config ==================
-# DB_PATH = os.getenv("SQLITE_PATH", "app.db")
-SQLSERVER_URL = "mssql+pyodbc://scheduler:Rdl2023!@rdl-srvrsql01/esidb?driver=ODBC+Driver+17+for+SQL+Server"
-# DATABASE_URL = f"sqlite:///{DB_PATH}"
+DB_PATH = os.getenv("SQLITE_PATH", "app.db")
+# DATABASE_URL = "mssql+pyodbc://scheduler:Rdl2023!@rdl-srvrsql01/esidb?driver=ODBC+Driver+17+for+SQL+Server"
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
-engine = create_engine(SQLSERVER_URL, future=True)
+engine = create_engine(DATABASE_URL, future=True)
 metadata = MetaData()
 
 CONTENT_FOLDER = os.path.join(os.path.dirname(__file__), "content")
+
+# ================== Auth / Session ==================
+# secret used to sign the session cookie; override with env var in production
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
+serializer = URLSafeTimedSerializer(SECRET_KEY)
+SESSION_COOKIE = "session"
+
+
+def create_session_token(data: dict) -> str:
+    return serializer.dumps(data)
+
+
+def verify_session_token(token: str, max_age: int = 86400) -> dict:
+    try:
+        return serializer.loads(token, max_age=max_age)
+    except SignatureExpired:
+        raise HTTPException(status_code=401, detail="Session expired")
+    except BadSignature:
+        raise HTTPException(status_code=401, detail="Invalid session token")
+
+
+def require_admin(session: str = Cookie(None)):
+    """Dependency to require admin session cookie. Raises 401 if invalid."""
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    data = verify_session_token(session)
+    if not data or not data.get("admin"):
+        raise HTTPException(status_code=401, detail="Not authorized")
+    return True
+
 
 # ================== Tabelas ==================
 Parts = Table(
@@ -73,6 +104,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Global middleware to protect endpoints (except allowlist)
+@app.middleware("http")
+async def admin_middleware(request: Request, call_next):
+    path = request.url.path
+    # allowlist: public routes (root `/` removed to require login)
+    allowlist = {"/login", "/logout", "/openapi.json", "/docs", "/redoc"}
+    if path.startswith("/static") or path in allowlist:
+        return await call_next(request)
+
+    token = request.cookies.get(SESSION_COOKIE)
+    # helper to decide if client likely expects HTML
+    accepts_html = "text/html" in request.headers.get("accept", "")
+
+    if not token:
+        # if browser GET, redirect to login; otherwise JSON 401
+        if request.method == "GET" and (accepts_html or path == "/"):
+            return RedirectResponse(url="/login")
+        return JSONResponse({"detail": "Not authenticated"}, status_code=401)
+    try:
+        # verify token (will raise HTTPException on failure)
+        verify_session_token(token)
+    except HTTPException as e:
+        if request.method == "GET" and (accepts_html or path == "/"):
+            return RedirectResponse(url="/login")
+        return JSONResponse({"detail": e.detail}, status_code=e.status_code)
+
+    return await call_next(request)
 
 
 # ================== Schemas Pydantic ==================
@@ -222,6 +282,50 @@ def serve_index():
             status_code=404, detail="index.html não encontrado na pasta content/"
         )
     return FileResponse(index_path, media_type="text/html")
+
+
+# Simple login page (static)
+@app.get("/login", include_in_schema=False)
+def serve_login():
+    login_path = os.path.join(CONTENT_FOLDER, "login.html")
+    if os.path.exists(login_path):
+        return FileResponse(login_path, media_type="text/html")
+    # fallback - small builtin form
+    html = """
+    <html><body>
+    <h2>Admin Login</h2>
+    <form method=post action="/login">
+      <label>Password: <input type=password name=password></label>
+      <button type=submit>Login</button>
+    </form>
+    </body></html>
+    """
+    return HTMLResponse(content=html)
+
+
+@app.post("/login", include_in_schema=False)
+def do_login(password: str = Form(...)):
+    """Authenticate using the ADMIN_PASSWORD env var and set a signed cookie."""
+    admin_pw = os.getenv("ADMIN_PASSWORD")
+    if not admin_pw:
+        raise HTTPException(
+            status_code=500,
+            detail="ADMIN_PASSWORD not configured. Set the ADMIN_PASSWORD environment variable.",
+        )
+    if password != admin_pw:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_session_token({"admin": True})
+    resp = JSONResponse({"ok": True})
+    # httponly cookie (not secure by default in dev)
+    resp.set_cookie(SESSION_COOKIE, token, httponly=True, samesite="lax", max_age=86400)
+    return resp
+
+
+@app.post("/logout", include_in_schema=False)
+def do_logout():
+    resp = JSONResponse({"ok": True})
+    resp.delete_cookie(SESSION_COOKIE)
+    return resp
 
 
 @app.get(

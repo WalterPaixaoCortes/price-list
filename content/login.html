@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Admin Login</h1>
+      <div class="box">
+        <form id="loginForm" method="post" action="/login">
+          <div class="field">
+            <label class="label">Password</label>
+            <div class="control">
+              <input class="input" type="password" name="password" required placeholder="Admin password">
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <button class="button is-primary" type="submit">Login</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <p class="is-size-7">Set the admin password via environment variable <code>ADMIN_PASSWORD</code>.</p>
+    </div>
+  </section>
+</body>
+
+</html>

@@ -6,3 +6,5 @@ pyodbc
 pandas
 openpyxl
 typer
+itsdangerous
+python-multipart
