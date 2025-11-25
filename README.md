@@ -14,3 +14,31 @@ uvicorn app:app --reload
 Visit `/login` in your browser to sign in. The server sets a signed `session` cookie for authenticated admin access. Use `/logout` to clear the session cookie.
 
 Note: This is a lightweight, self-contained solution intended for internal tools. For production use, consider TLS (HTTPS), stronger session management and secure cookie flags.
+
+## Docker
+
+You can run the app in Docker. The `lists` folder on the host will be mounted into the container so you can inspect generated files easily.
+
+Using docker-compose (recommended):
+
+```
+# set required env vars
+export ADMIN_PASSWORD="your-admin-password"
+export SECRET_KEY="a-secret-key"
+
+# build and start
+docker compose up --build
+```
+
+This maps:
+- `./lists` -> `/app/lists` (accessible inside the container)
+- `./prepare-lists/output` -> `/app/prepare-lists/output`
+
+Or run without compose:
+
+```
+docker build -t price-list .
+docker run -p 8000:8000 -e ADMIN_PASSWORD="your-admin-password" -e SECRET_KEY="a-secret" -v "$(pwd)/lists:/app/lists" -v "$(pwd)/prepare-lists/output:/app/prepare-lists/output" price-list
+```
+
+Visit `http://localhost:8000/login` after the container starts.

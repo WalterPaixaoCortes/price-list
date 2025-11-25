@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
+    volumes:
+      - ./lists:/app/lists
+    restart: unless-stopped
