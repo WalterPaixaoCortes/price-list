@@ -45,7 +45,35 @@
 <body>
   <section class="section">
     <div class="container">
-      <h1 class="title">Price List Update</h1>
+      <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/">
+            <strong>Price List Update</strong>
+          </a>
+
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNavbar">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div id="mainNavbar" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item" href="/">Home</a>
+            <a class="navbar-item" href="/export">Export</a>
+          </div>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <button id="logoutBtn" class="button is-light">Logout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       <p class="subtitle">Use the filters to search. Then propose price changes and export the updated list.</p>
 
       <!-- Notifications -->
@@ -556,19 +584,18 @@
     });
 
 
-    function endDate(date)
-    {
-	const year = parseInt(date.substring(0, 4), 10);
+    function endDate(date) {
+      const year = parseInt(date.substring(0, 4), 10);
 
-	// última data do ano
-	const endOfYear = new Date(year + 1, 0, 0);
+      // última data do ano
+      const endOfYear = new Date(year + 1, 0, 0);
 
-	// formata de volta como yyyy-mm-dd
-	const result =
-  		endOfYear.getFullYear() + "-" +
-  		String(endOfYear.getMonth() + 1).padStart(2, "0") + "-" +
-  		String(endOfYear.getDate()).padStart(2, "0");
-	return result;
+      // formata de volta como yyyy-mm-dd
+      const result =
+        endOfYear.getFullYear() + "-" +
+        String(endOfYear.getMonth() + 1).padStart(2, "0") + "-" +
+        String(endOfYear.getDate()).padStart(2, "0");
+      return result;
     }
 
     function renderProposalTable() {
@@ -606,7 +633,7 @@
         "Order Qty": Number(r.qty ?? 0),
         "End Date": endDate(r.effectiveDate) ?? "",
         "Unit Price": Number(Number(r.newPrice ?? 0).toFixed(2)),
-	"Processed Flag": "N"
+        "Processed Flag": "N"
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(data);
@@ -626,6 +653,37 @@
       }
       XLSX.writeFile(workbook, "proposed_prices.xlsx");
     });
+
+    // Logout button handler
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          const res = await fetch('/logout', { method: 'POST', credentials: 'same-origin' });
+          if (res.ok) {
+            // redirect to login page
+            window.location.href = '/login';
+          } else {
+            const txt = await res.text().catch(() => '');
+            notify('is-danger', `Logout failed: ${res.status} ${res.statusText} ${txt}`);
+          }
+        } catch (e) {
+          notify('is-danger', `Logout error: ${e.message}`);
+        }
+      });
+    }
+
+    // Navbar burger toggle
+    (function () {
+      const burger = document.querySelector('.navbar-burger');
+      const menu = document.getElementById(burger && burger.dataset.target);
+      if (burger && menu) {
+        burger.addEventListener('click', () => {
+          burger.classList.toggle('is-active');
+          menu.classList.toggle('is-active');
+        });
+      }
+    })();
   </script>
 </body>
 

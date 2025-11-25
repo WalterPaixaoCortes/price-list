@@ -4,7 +4,17 @@ import unicodedata
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from fastapi import FastAPI, Query, HTTPException, Depends, Cookie, Form, Request
+from fastapi import (
+    FastAPI,
+    File,
+    Query,
+    HTTPException,
+    Depends,
+    Cookie,
+    Form,
+    Request,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,16 +35,22 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import Connection
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+import shutil
+import tempfile
+import zipfile
+from pathlib import Path
+import subprocess
 
 # ================== Config ==================
-DB_PATH = os.getenv("SQLITE_PATH", "app.db")
-# DATABASE_URL = "mssql+pyodbc://scheduler:Rdl2023!@rdl-srvrsql01/esidb?driver=ODBC+Driver+17+for+SQL+Server"
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+# DB_PATH = os.getenv("SQLITE_PATH", "app.db")
+DATABASE_URL = "mssql+pyodbc://scheduler:Rdl2023!@rdl-srvrsql01/esidb?driver=ODBC+Driver+17+for+SQL+Server"
+# DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(DATABASE_URL, future=True)
 metadata = MetaData()
 
 CONTENT_FOLDER = os.path.join(os.path.dirname(__file__), "content")
+LISTS_FOLDER = os.path.join(os.path.dirname(__file__), "lists")
 
 # ================== Auth / Session ==================
 # secret used to sign the session cookie; override with env var in production
@@ -96,7 +112,7 @@ Prices = Table(
 )
 
 # ================== App ==================
-app = FastAPI(title="Lookup & PriceList API (SQLite)", version="3.0.0")
+app = FastAPI(title="Lookup & PriceList", version="3.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # ajuste em produção
@@ -284,6 +300,168 @@ def serve_index():
     return FileResponse(index_path, media_type="text/html")
 
 
+@app.get("/export", include_in_schema=False)
+def serve_export():
+    export_path = os.path.join(CONTENT_FOLDER, "export.html")
+    if os.path.exists(export_path):
+        return FileResponse(export_path, media_type="text/html")
+    raise HTTPException(
+        status_code=404, detail="export.html não encontrado na pasta content/"
+    )
+
+
+# --- Export APIs: list/upload/delete templates, list/delete outputs, generate, download_all ---
+TEMPLATES_DIR = os.path.join(LISTS_FOLDER, "templates")
+OUTPUT_DIR = os.path.join(LISTS_FOLDER, "output")
+
+
+def ensure_dirs():
+    os.makedirs(TEMPLATES_DIR, exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def list_files(root_dir: str):
+    files = []
+    for base, dirs, filenames in os.walk(root_dir):
+        for fn in filenames:
+            if fn == ".gitkeep":
+                continue
+            full = os.path.join(base, fn)
+            rel = os.path.relpath(full, root_dir)
+            files.append({"name": fn, "path": rel.replace("\\\\", "/"), "full": full})
+            # ignore repository placeholder files
+    return files
+
+
+@app.get("/api/templates")
+def api_list_templates():
+    ensure_dirs()
+    return list_files(TEMPLATES_DIR)
+
+
+@app.post("/api/templates")
+def api_upload_template(file: UploadFile = File(...)):
+    ensure_dirs()
+    safe_name = os.path.basename(file.filename)
+    dest = os.path.join(TEMPLATES_DIR, safe_name)
+    with open(dest, "wb") as out_f:
+        shutil.copyfileobj(file.file, out_f)
+    return {"ok": True, "name": safe_name}
+
+
+@app.delete("/api/templates")
+def api_delete_template(
+    path: str = Query(..., description="relative path under templates")
+):
+    ensure_dirs()
+    target = os.path.normpath(os.path.join(TEMPLATES_DIR, path))
+    if not target.startswith(os.path.abspath(TEMPLATES_DIR)):
+        raise HTTPException(status_code=400, detail="Invalid path")
+    if not os.path.exists(target):
+        raise HTTPException(status_code=404, detail="File not found")
+    os.remove(target)
+    return {"ok": True}
+
+
+@app.get("/api/outputs")
+def api_list_outputs():
+    ensure_dirs()
+    return list_files(OUTPUT_DIR)
+
+
+@app.delete("/api/outputs")
+def api_delete_output(
+    path: str = Query(..., description="relative path under outputs")
+):
+    ensure_dirs()
+    target = os.path.normpath(os.path.join(OUTPUT_DIR, path))
+    if not target.startswith(os.path.abspath(OUTPUT_DIR)):
+        raise HTTPException(status_code=400, detail="Invalid path")
+    if not os.path.exists(target):
+        raise HTTPException(status_code=404, detail="File not found")
+    os.remove(target)
+    return {"ok": True}
+
+
+@app.post("/api/generate")
+def api_generate_exports():
+    """Run the prepare-list CLI to generate export files.
+
+    This executes the script at `libs/prepare-list.py` with the templates and output
+    directories and the configured SQL/schema. Returns CLI output and the list
+    of generated output files.
+    """
+    ensure_dirs()
+    # build command
+    script_path = os.path.join(os.path.dirname(__file__), "libs", "prepare-list.py")
+    if not os.path.exists(script_path):
+        # fallback to simple generator
+        now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        outp = os.path.join(OUTPUT_DIR, f"export_{now}.csv")
+        with open(outp, "w", encoding="utf-8") as f:
+            f.write("sku,description,price\n")
+            f.write("SAMPLE,Sample export,0.00\n")
+        return {
+            "ok": True,
+            "generated": [os.path.relpath(outp, OUTPUT_DIR)],
+            "note": "prepare-list script not found; created placeholder",
+        }
+
+    cmd = [
+        os.environ.get("PYTHON_EXECUTABLE", "python"),
+        script_path,
+        "--input",
+        TEMPLATES_DIR,
+        "--output",
+        OUTPUT_DIR,
+        "--schema",
+        os.path.join("lists", "schema.json"),
+        "--sql",
+        os.path.join("sql-scripts", "extract_query.sql"),
+        "--db-uri",
+        DATABASE_URL,
+    ]
+
+    try:
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True, check=False, timeout=300
+        )
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=500, detail="Generation timed out")
+
+    stdout = proc.stdout or ""
+    stderr = proc.stderr or ""
+
+    if proc.returncode != 0:
+        return JSONResponse(
+            {
+                "ok": False,
+                "returncode": proc.returncode,
+                "stdout": stdout,
+                "stderr": stderr,
+            },
+            status_code=500,
+        )
+
+    # list outputs produced
+    generated = [f["path"] for f in list_files(OUTPUT_DIR)]
+    return {"ok": True, "generated": generated, "stdout": stdout}
+
+
+@app.get("/api/download_all")
+def api_download_all():
+    ensure_dirs()
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+    tmp.close()
+    with zipfile.ZipFile(tmp.name, "w", zipfile.ZIP_DEFLATED) as zf:
+        for base, dirs, files in os.walk(OUTPUT_DIR):
+            for fn in files:
+                full = os.path.join(base, fn)
+                arcname = os.path.relpath(full, OUTPUT_DIR)
+                zf.write(full, arcname)
+    return FileResponse(tmp.name, media_type="application/zip", filename="exports.zip")
+
+
 # Simple login page (static)
 @app.get("/login", include_in_schema=False)
 def serve_login():
@@ -304,19 +482,33 @@ def serve_login():
 
 
 @app.post("/login", include_in_schema=False)
-def do_login(password: str = Form(...)):
-    """Authenticate using the ADMIN_PASSWORD env var and set a signed cookie."""
+def do_login(request: Request, password: str = Form(...)):
+    """Authenticate using the ADMIN_PASSWORD env var and set a signed cookie.
+
+    For form POSTs from browsers: on success redirect to `/`, on failure re-render login with an error.
+    For non-browser clients, fallback to JSON responses.
+    """
     admin_pw = os.getenv("ADMIN_PASSWORD")
+    # missing configuration
     if not admin_pw:
+        # if browser, show simple page with error
+        if "text/html" in request.headers.get("accept", ""):
+            return HTMLResponse(
+                "<h1>Server misconfigured: ADMIN_PASSWORD not set</h1>", status_code=500
+            )
         raise HTTPException(
             status_code=500,
             detail="ADMIN_PASSWORD not configured. Set the ADMIN_PASSWORD environment variable.",
         )
+
     if password != admin_pw:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        # wrong password: for browser show login page with message, otherwise 401 JSON
+        resp = RedirectResponse(url="/", status_code=302)
+        return resp
+
+    # success: create token and redirect to /
     token = create_session_token({"admin": True})
-    resp = JSONResponse({"ok": True})
-    # httponly cookie (not secure by default in dev)
+    resp = RedirectResponse(url="/", status_code=302)
     resp.set_cookie(SESSION_COOKIE, token, httponly=True, samesite="lax", max_age=86400)
     return resp
 

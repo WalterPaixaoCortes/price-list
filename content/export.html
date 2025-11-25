@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Export Price Lists</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <style>
+    /* small page-specific styles */
+    .content-box {
+      min-height: 300px;
+    }
+
+    /* selected item contrast for lists */
+    .menu-list a.is-active {
+      background-color: #00d1b2;
+      color: #fff !important;
+      border-radius: 4px;
+      padding-left: 0.5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="section">
+    <div class="container">
+      <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/">
+            <strong>Price List Update</strong>
+          </a>
+
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNavbar">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div id="mainNavbar" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item" href="/">Home</a>
+            <a class="navbar-item is-active" href="/export">Export</a>
+          </div>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <button id="logoutBtn" class="button is-light">Logout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <h1 class="title">Export Price Lists</h1>
+      <p class="subtitle">Manage templates and output files for export.</p>
+
+      <div id="notifyArea"></div>
+
+      <div class="block">
+        <button id="generateBtn" class="button is-primary">Generate Export Files</button>
+      </div>
+
+      <div class="columns">
+        <!-- Templates column -->
+        <div class="column is-6">
+          <div class="box">
+            <h2 class="title is-6">Templates</h2>
+            <div id="templatesList" class="content is-small">
+              <p class="has-text-grey">Loading templates…</p>
+            </div>
+
+            <hr />
+            <form id="uploadForm">
+              <div class="field">
+                <label class="label">Upload template</label>
+                <div class="control">
+                  <input id="templateFile" name="file" type="file" accept="*/*">
+                </div>
+              </div>
+              <div class="field is-grouped is-grouped-right">
+                <div class="control">
+                  <button type="submit" class="button is-link">Upload</button>
+                </div>
+                <div class="control">
+                  <button id="removeTemplateBtn" type="button" class="button is-danger" disabled>Remove
+                    selected</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Outputs column -->
+        <div class="column is-6">
+          <div class="box">
+            <h2 class="title is-6">Outputs</h2>
+            <div id="outputsList" class="content is-small">
+              <p class="has-text-grey">Loading outputs…</p>
+            </div>
+
+            <hr />
+            <div class="field is-grouped is-grouped-right">
+              <div class="control">
+                <button id="removeOutputBtn" type="button" class="button is-danger" disabled>Remove selected</button>
+              </div>
+              <div class="control">
+                <button id="downloadAllBtn" type="button" class="button is-success">Download All</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3 class="title is-6">Generation Output</h3>
+        <textarea id="generateOutput" class="textarea" rows="10" readonly
+          placeholder="Generation log will appear here..."></textarea>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Navbar burger toggle
+    (function () {
+      const burger = document.querySelector('.navbar-burger');
+      const menu = document.getElementById(burger && burger.dataset.target);
+      if (burger && menu) {
+        burger.addEventListener('click', () => {
+          burger.classList.toggle('is-active');
+          menu.classList.toggle('is-active');
+        });
+      }
+    })();
+
+    // Logout handler
+    (function () {
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (!logoutBtn) return;
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          const res = await fetch('/logout', { method: 'POST', credentials: 'same-origin' });
+          if (res.ok) {
+            window.location.href = '/login';
+          } else {
+            const txt = await res.text().catch(() => '');
+            alert('Logout failed: ' + res.status + ' ' + res.statusText + '\n' + txt);
+          }
+        } catch (e) {
+          alert('Logout error: ' + e.message);
+        }
+      });
+    })();
+
+    // Small notify helper (similar to index page)
+    function notify(type, message) {
+      const area = document.getElementById('notifyArea');
+      const box = document.createElement('div');
+      box.className = `notification ${type}`;
+      box.innerHTML = `<button class="delete" aria-label="Close"></button>${message}`;
+      box.querySelector('.delete').addEventListener('click', () => box.remove());
+      area.appendChild(box);
+      setTimeout(() => box.remove(), 6000);
+    }
+
+    // State
+    const selectedTemplates = new Set();
+    const selectedOutputs = new Set();
+
+    async function loadTemplates() {
+      const el = document.getElementById('templatesList');
+      el.innerHTML = '<p class="has-text-grey">Loading templates…</p>';
+      try {
+        const data = await fetch('/api/templates').then(r => r.json());
+        if (!Array.isArray(data) || !data.length) {
+          el.innerHTML = '<p class="has-text-grey">No templates found.</p>';
+          return;
+        }
+        const ul = document.createElement('ul');
+        ul.className = 'menu-list';
+        data.forEach(it => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.textContent = it.path;
+          a.href = '#';
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            // toggle selection for templates (multi-select)
+            if (selectedTemplates.has(it.path)) {
+              selectedTemplates.delete(it.path);
+              a.classList.remove('is-active');
+            } else {
+              selectedTemplates.add(it.path);
+              a.classList.add('is-active');
+            }
+            updateTemplatesControls();
+          });
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+        el.innerHTML = '';
+        el.appendChild(ul);
+        // reset selection set
+        selectedTemplates.clear();
+        updateTemplatesControls();
+      } catch (e) {
+        el.innerHTML = '<p class="has-text-danger">Error loading templates</p>';
+        notify('is-danger', `Error: ${e.message}`);
+      }
+    }
+
+    function updateTemplatesControls() {
+      const btn = document.getElementById('removeTemplateBtn');
+      if (selectedTemplates.size > 0) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    async function loadOutputs() {
+      const el = document.getElementById('outputsList');
+      el.innerHTML = '<p class="has-text-grey">Loading outputs…</p>';
+      try {
+        const data = await fetch('/api/outputs').then(r => r.json());
+        if (!Array.isArray(data) || !data.length) {
+          el.innerHTML = '<p class="has-text-grey">No outputs found.</p>';
+          return;
+        }
+        const ul = document.createElement('ul');
+        ul.className = 'menu-list';
+        data.forEach(it => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.textContent = it.path;
+          a.href = '#';
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            // toggle selection for multi-select
+            if (selectedOutputs.has(it.path)) {
+              selectedOutputs.delete(it.path);
+              a.classList.remove('is-active');
+            } else {
+              selectedOutputs.add(it.path);
+              a.classList.add('is-active');
+            }
+            // update buttons state
+            updateOutputsControls();
+          });
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+        el.innerHTML = '';
+        el.appendChild(ul);
+        // reset selection set
+        selectedOutputs.clear();
+        updateOutputsControls();
+      } catch (e) {
+        el.innerHTML = '<p class="has-text-danger">Error loading outputs</p>';
+        notify('is-danger', `Error: ${e.message}`);
+      }
+    }
+
+    function updateOutputsControls() {
+      const removeBtn = document.getElementById('removeOutputBtn');
+      const downloadAllBtn = document.getElementById('downloadAllBtn');
+      if (selectedOutputs.size > 0) {
+        removeBtn.classList.remove('is-light');
+        removeBtn.disabled = false;
+      } else {
+        removeBtn.disabled = true;
+      }
+      // downloadAll always enabled
+      downloadAllBtn.disabled = false;
+    }
+
+    // Upload handler
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('templateFile');
+      if (!input.files || !input.files.length) {
+        notify('is-warning', 'Choose a file to upload');
+        return;
+      }
+      const file = input.files[0];
+      const form = new FormData();
+      form.append('file', file);
+      try {
+        const res = await fetch('/api/templates', { method: 'POST', body: form });
+        if (!res.ok) throw new Error('Upload failed');
+        notify('is-success', 'Upload successful');
+        input.value = '';
+        await loadTemplates();
+      } catch (err) {
+        notify('is-danger', `Upload error: ${err.message}`);
+      }
+    });
+
+    // Remove selected templates (multiple)
+    document.getElementById('removeTemplateBtn').addEventListener('click', async () => {
+      if (selectedTemplates.size === 0) { notify('is-warning', 'Select one or more templates first'); return; }
+      if (!confirm(`Remove ${selectedTemplates.size} selected template(s)?`)) return;
+      const toDelete = Array.from(selectedTemplates);
+      let removed = 0;
+      for (const p of toDelete) {
+        try {
+          const res = await fetch(`/api/templates?path=${encodeURIComponent(p)}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error(`Failed to remove ${p}`);
+          removed += 1;
+        } catch (e) {
+          notify('is-danger', `Error removing ${p}: ${e.message}`);
+        }
+      }
+      if (removed) notify('is-success', `${removed} template(s) removed`);
+      selectedTemplates.clear();
+      await loadTemplates();
+    });
+
+    // Remove selected outputs (multiple)
+    document.getElementById('removeOutputBtn').addEventListener('click', async () => {
+      if (selectedOutputs.size === 0) { notify('is-warning', 'Select one or more outputs first'); return; }
+      if (!confirm(`Remove ${selectedOutputs.size} selected output(s)?`)) return;
+      const toDelete = Array.from(selectedOutputs);
+      let removed = 0;
+      for (const p of toDelete) {
+        try {
+          const res = await fetch(`/api/outputs?path=${encodeURIComponent(p)}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error(`Failed to remove ${p}`);
+          removed += 1;
+        } catch (e) {
+          notify('is-danger', `Error removing ${p}: ${e.message}`);
+        }
+      }
+      if (removed) notify('is-success', `${removed} output(s) removed`);
+      selectedOutputs.clear();
+      await loadOutputs();
+    });
+
+    // Generate exports — show stdout/stderr in textarea
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+      const outEl = document.getElementById('generateOutput');
+      outEl.value = 'Running generation...\n';
+      try {
+        const res = await fetch('/api/generate', { method: 'POST' });
+        const bodyText = await res.text();
+        let data = null;
+        try { data = JSON.parse(bodyText); } catch (e) { data = null; }
+
+        if (res.ok) {
+          // success
+          const stdout = (data && data.stdout) ? data.stdout : (data && data.generated) ? `Generated: ${data.generated.join(', ')}` : bodyText;
+          outEl.value = stdout;
+          notify('is-success', 'Generation finished');
+          await loadOutputs();
+        } else {
+          // error – try to show stderr or body
+          const stderr = (data && data.stderr) ? data.stderr : bodyText;
+          outEl.value = stderr || `Generation failed (status ${res.status})`;
+          notify('is-danger', `Generation failed: ${res.status}`);
+        }
+      } catch (e) {
+        outEl.value += `\nError: ${e.message}`;
+        notify('is-danger', `Error: ${e.message}`);
+      }
+    });
+
+    // Download all
+    document.getElementById('downloadAllBtn').addEventListener('click', () => {
+      window.location.href = '/api/download_all';
+    });
+
+    // initial load
+    loadTemplates();
+    loadOutputs();
+  </script>
+</body>
+
+</html>

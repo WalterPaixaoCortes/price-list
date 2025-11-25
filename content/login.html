@@ -3,31 +3,57 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Login Admin</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Price List</title>
+  <!-- Use the same Bulma version as the main page -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <style>
+    /* center the box on the page */
+    .login-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+    }
+  </style>
 </head>
 
 <body>
   <section class="section">
     <div class="container">
-      <h1 class="title">Admin Login</h1>
-      <div class="box">
-        <form id="loginForm" method="post" action="/login">
-          <div class="field">
-            <label class="label">Password</label>
-            <div class="control">
-              <input class="input" type="password" name="password" required placeholder="Admin password">
-            </div>
-          </div>
-          <div class="field">
-            <div class="control">
-              <button class="button is-primary" type="submit">Login</button>
-            </div>
-          </div>
-        </form>
+      <div class="columns">
+        <div class="column is-8">
+          <h1 class="title">Price List Update</h1>
+          <p class="subtitle">Admin area — faça login para acessar as funcionalidades.</p>
+        </div>
+        <div class="column is-4 has-text-right">
+          <!-- small hint or link back -->
+          <a class="button is-light" href="/">Home</a>
+        </div>
       </div>
-      <p class="is-size-7">Set the admin password via environment variable <code>ADMIN_PASSWORD</code>.</p>
+
+      <div class="login-wrapper">
+        <div class="box" style="width: 420px;">
+          <h2 class="title is-4">Admin Login</h2>
+          <form id="loginForm" method="post" action="/login">
+            <div class="field">
+              <label class="label">Password</label>
+              <div class="control">
+                <input class="input" type="password" name="password" required placeholder="Admin password">
+              </div>
+            </div>
+
+            <div class="field is-grouped is-grouped-right">
+              <div class="control">
+                <button class="button is-primary" type="submit">Login</button>
+              </div>
+            </div>
+          </form>
+
+          <p class="is-size-7 has-text-grey">Defina a senha admin via variável de ambiente <code>ADMIN_PASSWORD</code>.
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 </body>
