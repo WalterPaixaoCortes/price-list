@@ -10,6 +10,7 @@ from typing import List
 import typer
 import pandas as pd
 from pathlib import Path
+from dotenv import load_dotenv
 
 try:
     from openpyxl import load_workbook
@@ -30,25 +31,31 @@ app = typer.Typer()
 @app.command()
 def main(
     input_folder: str = typer.Option(
-        ..., "-i", "--input", help="Input folder containing Excel files"
+        None,
+        "-i",
+        "--input",
+        help="Input folder containing Excel files (env: PREP_INPUT)",
     ),
     output_folder: str = typer.Option(
-        ..., "-o", "--output", help="Output folder where processed files are written"
+        None,
+        "-o",
+        "--output",
+        help="Output folder where processed files are written (env: PREP_OUTPUT)",
     ),
     schema_file: str = typer.Option(
-        "prepare-lists/schema.json", "-s", "--schema", help="Path to schema.json"
+        None, "-s", "--schema", help="Path to schema.json (env: PREP_SCHEMA)"
     ),
     sql_file: str = typer.Option(
-        "sql-scripts/extract_query.sql",
+        None,
         "-q",
         "--sql",
-        help="Path to SQL file to execute",
+        help="Path to SQL file to execute (env: PREP_SQL)",
     ),
     db_uri: str = typer.Option(
         None,
         "-d",
         "--db-uri",
-        help="Database URI (SQLAlchemy style) used to run the SQL and fetch rows",
+        help="Database URI (SQLAlchemy style) used to run the SQL and fetch rows (env: DATABASE_URL)",
     ),
 ) -> None:
     """Copy Excel files from `input_folder` to `output_folder`, then populate them
@@ -59,6 +66,22 @@ def main(
     brackets depending on your SQL). The function will pivot categories into columns
     and map fields to the Excel columns according to `schema.json`.
     """
+    # load environment variables from .env (if present)
+    load_dotenv()
+
+    # resolve defaults from environment when CLI args not provided
+    default_input = os.getenv("PREP_INPUT", os.path.join("lists", "templates"))
+    default_output = os.getenv("PREP_OUTPUT", os.path.join("lists", "output"))
+    default_schema = os.getenv("PREP_SCHEMA", "prepare-lists/schema.json")
+    default_sql = os.getenv("PREP_SQL", "sql-scripts/extract_query.sql")
+    default_db = os.getenv("DATABASE_URL")
+
+    input_folder = input_folder or default_input
+    output_folder = output_folder or default_output
+    schema_file = schema_file or default_schema
+    sql_file = sql_file or default_sql
+    db_uri = db_uri or default_db
+
     in_root = Path(input_folder)
     out_root = Path(output_folder)
 

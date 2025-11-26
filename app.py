@@ -1,5 +1,6 @@
 # app.py
 import os
+from dotenv import load_dotenv
 import unicodedata
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -43,20 +44,29 @@ import subprocess
 
 # ================== Config ==================
 # DB_PATH = os.getenv("SQLITE_PATH", "app.db")
-DATABASE_URL = "mssql+pyodbc://scheduler:Rdl2023!@rdl-srvrsql01/esidb?driver=ODBC+Driver+17+for+SQL+Server"
-# DATABASE_URL = f"sqlite:///{DB_PATH}"
+load_dotenv()
 
+# Read configuration from environment (see .env.example)
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", f"sqlite:///{os.path.join(os.path.dirname(__file__), 'app.db')}"
+)
+
+# create SQLAlchemy engine
 engine = create_engine(DATABASE_URL, future=True)
 metadata = MetaData()
 
-CONTENT_FOLDER = os.path.join(os.path.dirname(__file__), "content")
-LISTS_FOLDER = os.path.join(os.path.dirname(__file__), "lists")
+CONTENT_FOLDER = os.getenv(
+    "CONTENT_FOLDER", os.path.join(os.path.dirname(__file__), "content")
+)
+LISTS_FOLDER = os.getenv(
+    "LISTS_FOLDER", os.path.join(os.path.dirname(__file__), "lists")
+)
 
 # ================== Auth / Session ==================
 # secret used to sign the session cookie; override with env var in production
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
 serializer = URLSafeTimedSerializer(SECRET_KEY)
-SESSION_COOKIE = "session"
+SESSION_COOKIE = os.getenv("SESSION_COOKIE_NAME", "session")
 
 
 def create_session_token(data: dict) -> str:
@@ -184,103 +194,6 @@ def get_conn():
     with engine.connect() as conn:
         yield conn
 
-
-def seed_if_empty():
-    """Cria tabelas e injeta dados se ainda não existirem."""
-    metadata.create_all(engine)
-    with engine.begin() as conn:
-        # parts
-        total_parts = conn.execute(text("SELECT COUNT(*) FROM parts")).scalar()
-        if total_parts == 0:
-            parts = [
-                ("P-001", "Alpha Core"),
-                ("P-002", "Alpine Edge"),
-                ("P-003", "Aurora X"),
-                ("P-004", "Bravo One"),
-                ("P-005", "Beta Pro"),
-                ("P-006", "Cobalt Vision"),
-                ("P-007", "Crimson Jet"),
-                ("P-008", "Delta Light"),
-                ("P-009", "Echo Nova"),
-                ("P-010", "Falcon Prime"),
-                ("P-011", "Galaxy Beam"),
-                ("P-012", "Helios Max"),
-                ("P-013", "Indigo Flow"),
-                ("P-014", "Jade Spark"),
-                ("P-015", "Kappa Shield"),
-                ("P-016", "Lunar Drive"),
-                ("P-017", "Mercury Pad"),
-                ("P-018", "Nimbus Ray"),
-                ("P-019", "Orion Pulse"),
-                ("P-020", "Phoenix Ultra"),
-            ]
-            conn.execute(
-                Parts.insert(),
-                [
-                    {"id": pid, "label": label, "label_norm": norm(label)}
-                    for pid, label in parts
-                ],
-            )
-            print("parts seeded.")
-
-        # categories
-        total_cat = conn.execute(text("SELECT COUNT(*) FROM categories")).scalar()
-        if total_cat == 0:
-            cats = [
-                ("CAT-A", "Hardware"),
-                ("CAT-B", "Software"),
-                ("CAT-C", "Services"),
-                ("CAT-D", "Licensing"),
-                ("CAT-E", "Support"),
-            ]
-            conn.execute(
-                Categories.insert(), [{"id": cid, "name": name} for cid, name in cats]
-            )
-
-        # prices (pelo menos 100 – 20 parts x 5 categories)
-        total_prices = conn.execute(text("SELECT COUNT(*) FROM prices")).scalar()
-        if total_prices == 0:
-            # carregue parts e categories do banco
-            parts_rows = (
-                conn.execute(select(Parts.c.id).order_by(Parts.c.id)).scalars().all()
-            )
-            cat_rows = (
-                conn.execute(select(Categories.c.id).order_by(Categories.c.id))
-                .scalars()
-                .all()
-            )
-            now = datetime.utcnow()
-
-            batch = []
-            for pidx, partid in enumerate(parts_rows, start=1):
-                for cidx, catid in enumerate(cat_rows, start=1):
-                    # sku determinístico
-                    num = partid.split("-")[1]
-                    letter = chr(ord("A") + (cidx - 1))  # A..E
-                    sku = f"SKU-{num}-{letter}"
-                    desc = f"Package for {partid} - {catid}"
-                    # preço determinístico (variação por índices)
-                    price = round(50 + (pidx * 7.3) + (cidx * 11.1), 2)
-                    # datas entre hoje-0 e hoje-30
-                    eff = now - timedelta(days=((pidx * cidx) % 30))
-                    batch.append(
-                        {
-                            "partid": partid,
-                            "catid": catid,
-                            "sku": sku,
-                            "description": desc,
-                            "price": price,
-                            "currency": "USD",
-                            "effective_date": eff,
-                        }
-                    )
-            # insere ~100 linhas
-            conn.execute(Prices.insert(), batch)
-            conn.commit()
-
-
-# roda o seed no import/boot
-# seed_if_empty()
 
 app.mount(
     "/static",

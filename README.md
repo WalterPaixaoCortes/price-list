@@ -42,3 +42,5 @@ docker run -p 8000:8000 -e ADMIN_PASSWORD="your-admin-password" -e SECRET_KEY="a
 ```
 
 Visit `http://localhost:8000/login` after the container starts.
+
+Tip: instead of exporting variables manually, copy `.env.example` to `.env` and edit values there. `docker compose` will pick up `.env` when `env_file: .env` is configured in `docker-compose.yml`.
