@@ -72,7 +72,7 @@ def main(
     # resolve defaults from environment when CLI args not provided
     default_input = os.getenv("PREP_INPUT", os.path.join("lists", "templates"))
     default_output = os.getenv("PREP_OUTPUT", os.path.join("lists", "output"))
-    default_schema = os.getenv("PREP_SCHEMA", "prepare-lists/schema.json")
+    default_schema = os.getenv("PREP_SCHEMA", "lists/schema.json")
     default_sql = os.getenv("PREP_SQL", "sql-scripts/extract_query.sql")
     default_db = os.getenv("DATABASE_URL")
 
@@ -81,6 +81,80 @@ def main(
     schema_file = schema_file or default_schema
     sql_file = sql_file or default_sql
     db_uri = db_uri or default_db
+
+    # Load lookup CSV (first CSV found in PREP_LOOKUP) into a dict keyed by Part #
+    lookup_dir = os.getenv("PREP_LOOKUP", os.path.join("lists", "lookup"))
+    lookup_map = {}
+    try:
+        p = Path(lookup_dir)
+        lookup_file = None
+        if p.exists() and p.is_dir():
+            for f in sorted(p.glob("*.csv")):
+                lookup_file = f
+                break
+
+        if lookup_file:
+            import csv
+
+            with lookup_file.open(newline="", encoding="utf-8") as fh:
+                reader = csv.DictReader(fh)
+                headers = reader.fieldnames or []
+
+                # find best key column for part number
+                key_col = None
+                for candidate in (
+                    "Part #",
+                    "Part#",
+                    "Part",
+                    "part",
+                    "Partid",
+                    "partid",
+                ):
+                    if candidate in headers:
+                        key_col = candidate
+                        break
+                if not key_col:
+                    for h in headers:
+                        if "part" in h.lower():
+                            key_col = h
+                            break
+
+                # find description column
+                desc_col = None
+                for candidate in ("Description", "Desc", "description"):
+                    if candidate in headers:
+                        desc_col = candidate
+                        break
+                if not desc_col:
+                    for h in headers:
+                        if "desc" in h.lower():
+                            desc_col = h
+                            break
+
+                for row in reader:
+                    raw_key = row.get(key_col) if key_col else None
+                    if not raw_key:
+                        # try other common fields
+                        raw_key = row.get("Partid") or row.get("partid")
+                    if not raw_key:
+                        continue
+                    key_norm = str(raw_key).strip()
+                    if not key_norm:
+                        continue
+                    partid_val = row.get(key_col) or row.get("Partid") or key_norm
+                    desc_val = row.get(desc_col) or ""
+                    lookup_map[key_norm.lower()] = {
+                        "Partid": str(partid_val).strip(),
+                        "Description": str(desc_val).strip(),
+                    }
+
+            typer.echo(f"Loaded lookup file: {lookup_file} ({len(lookup_map)} entries)")
+        else:
+            typer.echo(
+                f"No lookup CSV found in {lookup_dir}; continuing without lookup"
+            )
+    except Exception as exc:
+        typer.echo(f"Failed to load lookup CSV: {exc}")
 
     in_root = Path(input_folder)
     out_root = Path(output_folder)
@@ -202,6 +276,24 @@ def main(
             for idx, col in enumerate(schema_columns, start=1):
                 col_map[col.get("columnname")] = idx
 
+        # detect partid and description columns in the Excel schema
+        partid_col_idx = None
+        desc_col_idx = None
+
+        def find_col_index(candidates):
+            for cname, idx in col_map.items():
+                lname = str(cname or "").lower()
+                for cand in candidates:
+                    candl = cand.lower()
+                    if lname == candl or candl in lname:
+                        return idx
+            return None
+
+        partid_col_idx = find_col_index(
+            ["Part #", "Part#", "Partid", "Part", "partid", "part id"]
+        )
+        desc_col_idx = find_col_index(["Description", "Desc", "description", "descr"])
+
         # prepare rows to write from SQL results (no pivot required)
         # reset index to ensure iteration
         df_rows = df_sql.copy()
@@ -317,6 +409,39 @@ def main(
                     col_map[cname] = col_idx
 
                 ws.cell(row=write_row, column=col_idx, value=val)
+
+            # After writing all columns for this row, try to populate Part # and Description from lookup_map
+            try:
+                # determine key from the Excel partid column if present, otherwise from SQL row 'partid'
+                key_val = None
+                if partid_col_idx is not None:
+                    cell_val = ws.cell(row=write_row, column=partid_col_idx).value
+                    if cell_val is not None:
+                        key_val = str(cell_val).strip()
+                if not key_val:
+                    # try SQL row field (lowercase normalized earlier)
+                    if "partid" in df_rows.columns:
+                        key_val = str(prow.get("partid") or "").strip()
+
+                if key_val:
+                    lookup_key = key_val.lower()
+                    lm = lookup_map.get(lookup_key)
+                    if lm:
+                        if partid_col_idx is not None:
+                            ws.cell(
+                                row=write_row,
+                                column=partid_col_idx,
+                                value=lm.get("Partid", key_val),
+                            )
+                        if desc_col_idx is not None:
+                            ws.cell(
+                                row=write_row,
+                                column=desc_col_idx,
+                                value=lm.get("Description", ""),
+                            )
+            except Exception:
+                # non-fatal: continue processing
+                pass
 
             write_row += 1
 

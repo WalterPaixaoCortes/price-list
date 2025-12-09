@@ -9,7 +9,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -55,7 +55,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -93,7 +93,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -127,7 +127,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -153,7 +153,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -203,7 +203,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -237,7 +237,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -267,7 +267,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -301,7 +301,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -327,7 +327,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -377,7 +377,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -419,7 +419,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -453,7 +453,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",
@@ -479,7 +479,7 @@
       },
       {
         "columnname": "Part #",
-        "dfcolumnname": "sku"
+        "dfcolumnname": "Part #"
       },
       {
         "columnname": "Description",

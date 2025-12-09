@@ -1,4 +1,4 @@
-select partid, description, effective_date,
+select partid, sku as "Part #", description, effective_date,
 MAX([DLR-1]) as [DLR-1],
 MAX([DLR-6]) as [DLR-6],
 MAX([DLR-25]) as [DLR-25],
@@ -20,5 +20,5 @@ MAX([SIL-1]) as [SIL-1],
 MAX([SIL-100]) as [SIL-100],
 MAX([SIL-250]) as [SIL-250]
 from prices
-group by partid, description, effective_date
+group by partid, sku, description, effective_date
 order by partid;
