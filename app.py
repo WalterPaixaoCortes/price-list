@@ -43,7 +43,6 @@ from pathlib import Path
 import subprocess
 
 # ================== Config ==================
-# DB_PATH = os.getenv("SQLITE_PATH", "app.db")
 load_dotenv()
 
 # Read configuration from environment (see .env.example)
@@ -64,9 +63,9 @@ LISTS_FOLDER = os.getenv(
 
 # ================== Auth / Session ==================
 # secret used to sign the session cookie; override with env var in production
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
+SECRET_KEY = os.getenv("SECRET_KEY", "123456")
 serializer = URLSafeTimedSerializer(SECRET_KEY)
-SESSION_COOKIE = os.getenv("SESSION_COOKIE_NAME", "session")
+SESSION_COOKIE = os.getenv("SESSION_COOKIE_NAME", "123456")
 
 
 def create_session_token(data: dict) -> str:
@@ -122,7 +121,7 @@ Prices = Table(
 )
 
 # ================== App ==================
-app = FastAPI(title="Lookup & PriceList", version="3.0.0")
+app = FastAPI(title="Price List Management", version="3.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # ajuste em produção
@@ -285,7 +284,7 @@ def api_get_lookup(name: str):
     ensure_dirs()
     safe = os.path.basename(name)
     target = os.path.normpath(os.path.join(LOOKUP_DIR, safe))
-    if not target.startswith(os.path.abspath(LOOKUP_DIR)):
+    if not target.startswith(LOOKUP_DIR):
         raise HTTPException(status_code=400, detail="Invalid path")
     if not os.path.exists(target):
         raise HTTPException(status_code=404, detail="File not found")
@@ -309,7 +308,7 @@ def api_put_lookup(name: str, payload: dict):
     ensure_dirs()
     safe = os.path.basename(name)
     target = os.path.normpath(os.path.join(LOOKUP_DIR, safe))
-    if not target.startswith(os.path.abspath(LOOKUP_DIR)):
+    if not target.startswith((LOOKUP_DIR)):
         raise HTTPException(status_code=400, detail="Invalid path")
 
     rows = payload.get("rows")
@@ -343,7 +342,7 @@ def api_delete_lookup(
 ):
     ensure_dirs()
     target = os.path.normpath(os.path.join(LOOKUP_DIR, path))
-    if not target.startswith(os.path.abspath(LOOKUP_DIR)):
+    if not target.startswith(LOOKUP_DIR):
         raise HTTPException(status_code=400, detail="Invalid path")
     if not os.path.exists(target):
         raise HTTPException(status_code=404, detail="File not found")

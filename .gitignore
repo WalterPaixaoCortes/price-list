@@ -209,3 +209,5 @@ __marimo__/
 # RDL
 lists/output/*/*.xlsx
 data.csv
+prepare-lists/*
+

@@ -36,5 +36,6 @@ MAX([SIL-1]) as [SIL-1],
 MAX([SIL-100]) as [SIL-100],
 MAX([SIL-250]) as [SIL-250]
 from raw_data
+where effective_date = (select max(effective_date) from raw_data rd2 where rd2.partid = raw_data.partid)
 group by partid, description, effective_date
 order by partid;
