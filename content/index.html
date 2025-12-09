@@ -637,22 +637,31 @@
         "Processed Flag": "N"
       }));
 
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Proposed Prices");
-      // mark numeric columns for Excel
-      const range = XLSX.utils.decode_range(worksheet['!ref']);
-      for (let C = 0; C <= range.e.c; C++) {
-        const headerCell = XLSX.utils.encode_cell({ r: 0, c: C });
-        const header = worksheet[headerCell]?.v;
-        if (header === "Current Price" || header === "New Price" || header === "Stock") {
-          for (let R = 1; R <= range.e.r; R++) {
-            const addr = XLSX.utils.encode_cell({ r: R, c: C });
-            if (worksheet[addr]) worksheet[addr].t = 'n';
+      // send payload to server to import into database
+      (async () => {
+        try {
+          exportBtn.disabled = true;
+          notify('is-info', 'Sending data to server...');
+          const res = await fetch('/api/import_price_update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+            credentials: 'same-origin'
+          });
+          const body = await res.json().catch(() => null);
+          if (res.ok) {
+            notify('is-success', `Imported ${body && body.rows ? body.rows : data.length} rows`);
+          } else {
+            notify('is-danger', `Import failed: ${res.status} ${res.statusText}`);
+            console.error('Import error', body);
           }
+        } catch (e) {
+          notify('is-danger', `Import error: ${e.message}`);
+          console.error(e);
+        } finally {
+          exportBtn.disabled = false;
         }
-      }
-      XLSX.writeFile(workbook, "proposed_prices.xlsx");
+      })();
     });
 
     // Logout button handler

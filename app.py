@@ -34,6 +34,7 @@ from sqlalchemy import (
     and_,
     Index,
 )
+import pandas as pd
 from sqlalchemy.engine import Connection
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import shutil
@@ -378,6 +379,55 @@ def api_delete_template(
 def api_list_outputs():
     ensure_dirs()
     return list_files(OUTPUT_DIR)
+
+
+@app.post("/api/import_price_update")
+def api_import_price_update(payload: List[dict]):
+    """Receive rows (array of objects) and import into dbo.0_Price_Update.
+
+    The endpoint will truncate the target table before inserting the new rows.
+    """
+    if not payload:
+        raise HTTPException(status_code=400, detail="No rows provided")
+
+    try:
+        # build DataFrame
+        df = pd.DataFrame(payload)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid payload: {e}")
+
+    # Ensure we have an engine defined and available
+    if engine is None:
+        raise HTTPException(status_code=500, detail="Database engine not configured")
+
+    table_name = "0_Price_Update"
+    schema_name = "dbo"
+
+    try:
+        # Try to truncate first (may require higher privileges); fall back to delete
+        with engine.begin() as conn:
+            try:
+                conn.execute(text(f"TRUNCATE TABLE {schema_name}.[{table_name}]"))
+            except Exception:
+                conn.execute(text(f"DELETE FROM {schema_name}.[{table_name}]"))
+    except Exception:
+        # If truncation/delete failed, continue but report error
+        raise HTTPException(status_code=500, detail="Failed to empty target table")
+
+    try:
+        # append dataframe to SQL table
+        df.to_sql(
+            table_name,
+            con=engine,
+            schema=schema_name,
+            if_exists="append",
+            index=False,
+            method="multi",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to insert rows: {e}")
+
+    return {"ok": True, "rows": len(df)}
 
 
 @app.delete("/api/outputs")
