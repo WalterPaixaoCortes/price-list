@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Lookup Table</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <style>
+    .editable td[contenteditable] {
+      outline: none;
+    }
+
+    .selected {
+      background: #f5f7ff;
+    }
+
+    .table-wrap {
+      max-height: 60vh;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="section">
+    <div class="container">
+      <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/">
+            <strong>Price List Update</strong>
+          </a>
+          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNavbar">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div id="mainNavbar" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item" href="/">Home</a>
+            <a class="navbar-item" href="/export">Export</a>
+            <a class="navbar-item is-active" href="/lookup">Lookup Table</a>
+          </div>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <button id="logoutBtn" class="button is-light">Logout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <h1 class="title">Lookup Table</h1>
+
+      <div id="notifyArea"></div>
+
+      <div class="box">
+        <div class="columns is-vcentered">
+          <div class="column is-6">
+            <label class="label">Available tables</label>
+            <div id="tablesList">Loading…</div>
+          </div>
+          <div class="column is-6">
+            <label class="label">Upload CSV</label>
+            <input id="fileInput" type="file" accept="text/csv" />
+            <div class="buttons mt-2">
+              <button id="uploadBtn" class="button is-primary">Upload</button>
+              <button id="deleteBtn" class="button is-danger">Delete Selected</button>
+            </div>
+            <p class="help">CSV first row must be header with column names.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="level">
+          <div class="level-left">
+            <h2 class="title is-5">Table Editor</h2>
+          </div>
+          <div class="level-right">
+            <div class="buttons">
+              <button id="addRowBtn" class="button is-small">Add Row</button>
+              <button id="saveBtn" class="button is-success is-small">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="tableArea" class="table-wrap">
+          <table id="lookupTable" class="table is-fullwidth editable">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    const notifyArea = document.getElementById('notifyArea');
+    function notify(type, msg) {
+      const el = document.createElement('div'); el.className = `notification ${type}`; el.textContent = msg;
+      notifyArea.appendChild(el); setTimeout(() => el.remove(), 5000);
+    }
+
+    const tablesList = document.getElementById('tablesList');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const addRowBtn = document.getElementById('addRowBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const tableHead = document.getElementById('tableHead');
+    const tableBody = document.getElementById('tableBody');
+
+    let selectedTable = null;
+    let columns = [];
+    let rows = [];
+
+    async function safeFetch(url, opts) {
+      const res = await fetch(url, opts);
+      if (!res.ok) { const text = await res.text().catch(() => ''); throw new Error(text || res.statusText); }
+      return res.json();
+    }
+
+    async function loadTables() {
+      tablesList.textContent = 'Loading…';
+      try {
+        const data = await safeFetch('/api/lookups');
+        tablesList.innerHTML = '';
+        if (data.length === 0) { tablesList.textContent = 'No tables uploaded yet.'; return; }
+        data.forEach(f => {
+          const btn = document.createElement('button');
+          btn.className = 'button is-white is-fullwidth';
+          btn.textContent = f.name;
+          btn.addEventListener('click', () => openTable(f.name, btn));
+          tablesList.appendChild(btn);
+        });
+      } catch (e) { tablesList.textContent = 'Failed to load'; notify('is-danger', 'Failed to list tables'); }
+    }
+
+    async function openTable(name, btn) {
+      // mark selected
+      Array.from(tablesList.querySelectorAll('button')).forEach(b => b.classList.remove('is-link'));
+      btn.classList.add('is-link');
+      selectedTable = name;
+      try {
+        const data = await safeFetch(`/api/lookups/${encodeURIComponent(name)}`);
+        columns = data.columns || [];
+        rows = data.rows || [];
+        renderTable();
+        notify('is-info', `Loaded ${name}`);
+      } catch (e) { notify('is-danger', 'Failed to load table'); }
+    }
+
+    function renderTable() {
+      tableHead.innerHTML = '';
+      tableBody.innerHTML = '';
+      if (!columns.length) { tableHead.innerHTML = '<tr><th>No columns</th></tr>'; return; }
+      const tr = document.createElement('tr');
+      columns.forEach(c => { const th = document.createElement('th'); th.textContent = c; tr.appendChild(th); });
+      tableHead.appendChild(tr);
+
+      rows.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.dataset.idx = idx;
+        columns.forEach(col => {
+          const td = document.createElement('td');
+          td.contentEditable = true;
+          td.textContent = r[col] ?? '';
+          tr.appendChild(td);
+        });
+        tr.addEventListener('click', () => tr.classList.toggle('selected'));
+        tableBody.appendChild(tr);
+      });
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+      const f = fileInput.files[0];
+      if (!f) { notify('is-warning', 'Select a CSV file first'); return; }
+      const fd = new FormData(); fd.append('file', f);
+      try {
+        await safeFetch('/api/lookups', { method: 'POST', body: fd });
+        notify('is-success', 'Uploaded'); fileInput.value = ''; loadTables();
+      } catch (e) { notify('is-danger', 'Upload failed'); }
+    });
+
+    deleteBtn.addEventListener('click', async () => {
+      if (!selectedTable) { notify('is-warning', 'Select a table first'); return; }
+      if (!confirm(`Delete ${selectedTable}?`)) return;
+      try {
+        await safeFetch(`/api/lookups?path=${encodeURIComponent(selectedTable)}`, { method: 'DELETE' });
+        notify('is-success', 'Deleted'); selectedTable = null; columns = []; rows = []; renderTable(); loadTables();
+      } catch (e) { notify('is-danger', 'Delete failed'); }
+    });
+
+    addRowBtn.addEventListener('click', () => {
+      if (!columns.length) { notify('is-warning', 'No table opened'); return; }
+      const obj = {};
+      columns.forEach(c => obj[c] = '');
+      rows.push(obj);
+      renderTable();
+    });
+
+    saveBtn.addEventListener('click', async () => {
+      if (!selectedTable) { notify('is-warning', 'No table opened'); return; }
+      // gather rows from DOM
+      const trs = Array.from(tableBody.querySelectorAll('tr'));
+      const newRows = trs.map(tr => {
+        const cells = Array.from(tr.querySelectorAll('td'));
+        const obj = {};
+        cells.forEach((td, i) => obj[columns[i]] = td.textContent);
+        return obj;
+      });
+      try {
+        await safeFetch(`/api/lookups/${encodeURIComponent(selectedTable)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: newRows }) });
+        notify('is-success', 'Saved'); loadTables();
+      } catch (e) { notify('is-danger', 'Save failed'); }
+    });
+
+    // navbar burger
+    document.querySelectorAll('.navbar-burger').forEach(b => b.addEventListener('click', () => { const target = document.getElementById(b.dataset.target); b.classList.toggle('is-active'); target.classList.toggle('is-active'); }));
+
+    // initial load
+    loadTables();
+  </script>
+</body>
+
+</html>

@@ -223,14 +223,26 @@ def serve_export():
     )
 
 
+@app.get("/lookup", include_in_schema=False)
+def serve_lookup():
+    lookup_path = os.path.join(CONTENT_FOLDER, "lookup.html")
+    if os.path.exists(lookup_path):
+        return FileResponse(lookup_path, media_type="text/html")
+    raise HTTPException(
+        status_code=404, detail="lookup.html não encontrado na pasta content/"
+    )
+
+
 # --- Export APIs: list/upload/delete templates, list/delete outputs, generate, download_all ---
 TEMPLATES_DIR = os.path.join(LISTS_FOLDER, "templates")
 OUTPUT_DIR = os.path.join(LISTS_FOLDER, "output")
+LOOKUP_DIR = os.path.join(LISTS_FOLDER, "lookup")
 
 
 def ensure_dirs():
     os.makedirs(TEMPLATES_DIR, exist_ok=True)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(LOOKUP_DIR, exist_ok=True)
 
 
 def list_files(root_dir: str):
@@ -250,6 +262,93 @@ def list_files(root_dir: str):
 def api_list_templates():
     ensure_dirs()
     return list_files(TEMPLATES_DIR)
+
+
+@app.get("/api/lookups")
+def api_list_lookups():
+    ensure_dirs()
+    return list_files(LOOKUP_DIR)
+
+
+@app.post("/api/lookups")
+def api_upload_lookup(file: UploadFile = File(...)):
+    ensure_dirs()
+    safe_name = os.path.basename(file.filename)
+    dest = os.path.join(LOOKUP_DIR, safe_name)
+    with open(dest, "wb") as out_f:
+        shutil.copyfileobj(file.file, out_f)
+    return {"ok": True, "name": safe_name}
+
+
+@app.get("/api/lookups/{name}")
+def api_get_lookup(name: str):
+    ensure_dirs()
+    safe = os.path.basename(name)
+    target = os.path.normpath(os.path.join(LOOKUP_DIR, safe))
+    if not target.startswith(os.path.abspath(LOOKUP_DIR)):
+        raise HTTPException(status_code=400, detail="Invalid path")
+    if not os.path.exists(target):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # read CSV
+    import csv
+
+    rows = []
+    with open(target, newline="", encoding="utf-8") as fh:
+        reader = csv.DictReader(fh)
+        cols = reader.fieldnames or []
+        for r in reader:
+            rows.append(r)
+
+    return {"ok": True, "name": safe, "columns": cols, "rows": rows}
+
+
+@app.put("/api/lookups/{name}")
+def api_put_lookup(name: str, payload: dict):
+    """Replace CSV contents. Expects payload: { rows: [ {col: val}, ... ] }"""
+    ensure_dirs()
+    safe = os.path.basename(name)
+    target = os.path.normpath(os.path.join(LOOKUP_DIR, safe))
+    if not target.startswith(os.path.abspath(LOOKUP_DIR)):
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    rows = payload.get("rows")
+    if rows is None:
+        raise HTTPException(status_code=400, detail="Missing rows in payload")
+
+    # determine columns from first row or empty
+    cols = []
+    if rows:
+        first = rows[0]
+        if isinstance(first, dict):
+            cols = list(first.keys())
+        else:
+            raise HTTPException(status_code=400, detail="Rows must be list of objects")
+
+    import csv
+
+    # write CSV
+    with open(target, "w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=cols)
+        writer.writeheader()
+        for r in rows:
+            writer.writerow(r)
+
+    return {"ok": True, "name": safe}
+
+
+@app.delete("/api/lookups")
+def api_delete_lookup(
+    path: str = Query(..., description="relative path under lookups")
+):
+    ensure_dirs()
+    target = os.path.normpath(os.path.join(LOOKUP_DIR, path))
+    if not target.startswith(os.path.abspath(LOOKUP_DIR)):
+        raise HTTPException(status_code=400, detail="Invalid path")
+    if not os.path.exists(target):
+        raise HTTPException(status_code=404, detail="File not found")
+    os.remove(target)
+    return {"ok": True}
 
 
 @app.post("/api/templates")
