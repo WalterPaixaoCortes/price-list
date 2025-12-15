@@ -630,7 +630,7 @@
       const data = proposedRows.map(r => ({
         "Part ID": r.partid,
         "Price Code": r.catid ?? "",
-        "Effective Date": r.effectiveDate || "",
+        "Effect Date": r.effectiveDate || "",
         "Order Qty": Number(r.qty ?? 0),
         "End Date": endDate(r.effectiveDate) ?? "",
         "Unit Price": Number(Number(r.newPrice ?? 0).toFixed(2)),
