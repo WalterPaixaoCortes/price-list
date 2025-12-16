@@ -42,6 +42,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 import subprocess
+import traceback
 
 # ================== Config ==================
 load_dotenv()
@@ -382,7 +383,8 @@ def api_list_outputs():
 
 
 @app.post("/api/import_price_update")
-def api_import_price_update(payload: List[dict]):
+def api_import_price_update(payload: List[dict],
+    conn: Connection = Depends(get_conn)):
     """Receive rows (array of objects) and import into dbo.0_Price_Update.
 
     The endpoint will truncate the target table before inserting the new rows.
@@ -401,16 +403,19 @@ def api_import_price_update(payload: List[dict]):
         raise HTTPException(status_code=500, detail="Database engine not configured")
 
     table_name = "0_Price_Update"
-    schema_name = "dbo"
+    schema_name = "esidemo.dbo"
 
     try:
         # Try to truncate first (may require higher privileges); fall back to delete
         with engine.begin() as conn:
+            print(f"TRUNCATE TABLE {schema_name}.{table_name}")
             try:
                 conn.execute(text(f"TRUNCATE TABLE {schema_name}.[{table_name}]"))
-            except Exception:
+            except Exception as e:
+                print(traceback.format_exc())
                 conn.execute(text(f"DELETE FROM {schema_name}.[{table_name}]"))
     except Exception:
+        print("oi1")
         # If truncation/delete failed, continue but report error
         raise HTTPException(status_code=500, detail="Failed to empty target table")
 
@@ -425,6 +430,7 @@ def api_import_price_update(payload: List[dict]):
             method="multi",
         )
     except Exception as e:
+        print("oi2")
         raise HTTPException(status_code=500, detail=f"Failed to insert rows: {e}")
 
     return {"ok": True, "rows": len(df)}
