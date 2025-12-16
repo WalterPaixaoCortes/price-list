@@ -98,55 +98,25 @@ def main(
 
             with lookup_file.open(newline="", encoding="utf-8") as fh:
                 reader = csv.DictReader(fh)
-                headers = reader.fieldnames or []
 
-                # find best key column for part number
-                key_col = None
-                for candidate in (
-                    "Part #",
-                    "Part#",
-                    "Part",
-                    "part",
-                    "Partid",
-                    "partid",
-                ):
-                    if candidate in headers:
-                        key_col = candidate
-                        break
-                if not key_col:
-                    for h in headers:
-                        if "part" in h.lower():
-                            key_col = h
-                            break
-
-                # find description column
-                desc_col = None
-                for candidate in ("Description", "Desc", "description"):
-                    if candidate in headers:
-                        desc_col = candidate
-                        break
-                if not desc_col:
-                    for h in headers:
-                        if "desc" in h.lower():
-                            desc_col = h
-                            break
+                # prefer explicit "Part #" column as the key; fall back to common alternatives
+                key_col = "Part #"
 
                 for row in reader:
-                    raw_key = row.get(key_col) if key_col else None
-                    if not raw_key:
-                        # try other common fields
-                        raw_key = row.get("Partid") or row.get("partid")
+                    print(row)
+                    raw_key = row.get(key_col)
                     if not raw_key:
                         continue
                     key_norm = str(raw_key).strip()
-                    if not key_norm:
-                        continue
-                    partid_val = row.get(key_col) or row.get("Partid") or key_norm
-                    desc_val = row.get(desc_col) or ""
-                    lookup_map[key_norm.lower()] = {
-                        "Partid": str(partid_val).strip(),
-                        "Description": str(desc_val).strip(),
+
+                    partid_val = row.get("\ufeffPart ID")
+                    desc_val = row.get("Description")
+                    entry = {
+                        "partid": str(partid_val).strip(),
+                        "description": str(desc_val).strip(),
                     }
+                    # simple direct mapping: key is the raw Part # value (stripped)
+                    lookup_map[key_norm] = entry
 
             typer.echo(f"Loaded lookup file: {lookup_file} ({len(lookup_map)} entries)")
         else:
@@ -277,22 +247,9 @@ def main(
                 col_map[col.get("columnname")] = idx
 
         # detect partid and description columns in the Excel schema
-        partid_col_idx = None
-        desc_col_idx = None
-
-        def find_col_index(candidates):
-            for cname, idx in col_map.items():
-                lname = str(cname or "").lower()
-                for cand in candidates:
-                    candl = cand.lower()
-                    if lname == candl or candl in lname:
-                        return idx
-            return None
-
-        partid_col_idx = find_col_index(
-            ["Part #", "Part#", "Partid", "Part", "partid", "part id"]
-        )
-        desc_col_idx = find_col_index(["Description", "Desc", "description", "descr"])
+        key_idx = 1
+        partid_col_idx = 2
+        desc_col_idx = 3
 
         # prepare rows to write from SQL results (no pivot required)
         # reset index to ensure iteration
@@ -414,8 +371,8 @@ def main(
             try:
                 # determine key from the Excel partid column if present, otherwise from SQL row 'partid'
                 key_val = None
-                if partid_col_idx is not None:
-                    cell_val = ws.cell(row=write_row, column=partid_col_idx).value
+                if key_idx is not None:
+                    cell_val = ws.cell(row=write_row, column=key_idx).value
                     if cell_val is not None:
                         key_val = str(cell_val).strip()
                 if not key_val:
@@ -424,23 +381,25 @@ def main(
                         key_val = str(prow.get("partid") or "").strip()
 
                 if key_val:
-                    lookup_key = key_val.lower()
+                    lookup_key = key_val.strip()
                     lm = lookup_map.get(lookup_key)
+
                     if lm:
                         if partid_col_idx is not None:
                             ws.cell(
                                 row=write_row,
                                 column=partid_col_idx,
-                                value=lm.get("Partid", key_val),
+                                value=lm.get("partid", key_val),
                             )
                         if desc_col_idx is not None:
                             ws.cell(
                                 row=write_row,
                                 column=desc_col_idx,
-                                value=lm.get("Description", ""),
+                                value=lm.get("description", ""),
                             )
             except Exception:
                 # non-fatal: continue processing
+                print("lookup failed for key:", key_val)
                 pass
 
             write_row += 1
